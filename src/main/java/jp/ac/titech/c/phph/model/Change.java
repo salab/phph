@@ -24,19 +24,13 @@ public class Change {
     private final String file;
 
     @Getter
-    private final int oldOffset;
-
-    @Getter
-    private final int oldLength;
+    private final int oldBeginLine, oldEndLine;
 
     @Getter
     private final List<Statement> oldStatements;
 
     @Getter
-    private final int newOffset;
-
-    @Getter
-    private final int newLength;
+    private final int newBeginLine, newEndLine;
 
     @Getter
     private final List<Statement> newStatements;
