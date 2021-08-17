@@ -19,7 +19,7 @@ public class MPAStatementExtractor implements StatementExtractor {
                 .collect(Collectors.toList());
     }
 
-    private Statement convert(final yoshikihigo.cpanalyzer.data.Statement stmt) {
-        return new Statement(stmt.rText, stmt.nText, stmt.fromLine);
+    private Statement convert(final yoshikihigo.cpanalyzer.data.Statement s) {
+        return Statement.of(s.rText, s.nText, s.fromLine, s.toLine + 1);
     }
 }

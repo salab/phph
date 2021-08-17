@@ -12,8 +12,8 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
-import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
@@ -35,7 +35,7 @@ public class RepositoryAccess implements AutoCloseable {
         this.reader = repository.newObjectReader();
     }
 
-    public RepositoryAccess(final String path) {
+    public RepositoryAccess(final Path path) {
         this.repository = createRepository(path);
         this.walk = new RevWalk(repository);
         this.reader = repository.newObjectReader();
@@ -44,10 +44,10 @@ public class RepositoryAccess implements AutoCloseable {
     /**
      * Opens Git repository.
      */
-    private static Repository createRepository(final String path) {
+    private static Repository createRepository(final Path path) {
         try {
             final FileRepositoryBuilder builder = new FileRepositoryBuilder();
-            return builder.setGitDir(new File(path)).readEnvironment().findGitDir().build();
+            return builder.setGitDir(path.toFile()).readEnvironment().findGitDir().build();
         } catch (final IOException e) {
             log.error("Invalid repository path: {}", path);
             return null;

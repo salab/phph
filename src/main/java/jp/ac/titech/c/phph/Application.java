@@ -1,6 +1,5 @@
 package jp.ac.titech.c.phph;
 
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 import lombok.extern.log4j.Log4j2;
@@ -53,7 +52,6 @@ public class Application implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        System.out.println("app");
         Configurator.setRootLevel(config.logLevel);
         if (config.logLevel == Level.DEBUG || config.logLevel == Level.TRACE) {
             // suppress jgit's log
