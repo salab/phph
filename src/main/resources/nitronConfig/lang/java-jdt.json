@@ -1,0 +1,51 @@
+{
+  "extensions": [
+	".java"
+  ],
+  "parserConfig": {
+	"type": "jdt",
+	"version": "16"
+  },
+  "processConfig": {
+	"splitConfig": {
+	  "splitRules": [
+		"TYPE_DECLARATION",
+		"METHOD_DECLARATION",
+		"FIELD_DECLARATION",
+		"EXPRESSION_STATEMENT",
+		"VARIABLE_DECLARATION_STATEMENT",
+		"TRY_STATEMENT",
+		"CATCH_CLAUSE",
+		"WHILE_STATEMENT",
+		"DO_STATEMENT",
+		"FOR_STATEMENT",
+		"IF_STATEMENT",
+		"SWITCH_STATEMENT",
+		"SWITCH_CASE",
+		"BREAK_STATEMENT",
+		"SYNCHRONIZED_STATEMENT",
+		"RETURN_STATEMENT",
+		"THROW_STATEMENT"
+	  ]
+	},
+	"normalizeConfig": {
+	  "mapping": {
+		"STRING_LITERAL": "\"S\"",
+		"CHARACTER_LITERAL": "'C'",
+		"NUMBER_LITERAL": "N",
+		"BOOLEAN_LITERAL": "$L"
+	  },
+	  "indexedMapping": {
+		"//SIMPLE_NAME[..[@tag!='QUALIFIED_NAME' and @tag!='METHOD_DECLARATION' and @tag!='TYPE_DECLARATION'] and not(following::TOKEN[1]='(') and not(preceding-sibling::TOKEN[1]='.')]": "$V",
+		"//SIMPLE_NAME[..[@tag='QUALIFIED_NAME'] and position()=1 and not(preceding-sibling::TOKEN[1]='.')]": "$V"
+	  },
+	  "ignoreRules": [
+		"PACKAGE_DECLARATION",
+		"IMPORT_DECLARATION",
+		"MODIFIER",
+		"MARKER_ANNOTATION",
+		"//TOKEN[.='}']"
+	  ]
+	}
+  }
+}
