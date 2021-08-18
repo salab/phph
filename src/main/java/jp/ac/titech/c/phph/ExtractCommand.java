@@ -1,5 +1,6 @@
 package jp.ac.titech.c.phph;
 
+import com.google.common.base.Stopwatch;
 import jp.ac.titech.c.phph.db.Database;
 import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.db.Dao;
@@ -20,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 @Log4j2
 @Command(name = "extract", description = "Extract commits from a repository")
@@ -54,13 +56,14 @@ public class ExtractCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
+        Stopwatch w = Stopwatch.createStarted();
         final Jdbi jdbi = initializeDatabase();
         try (final Handle h = jdbi.open()) {
             this.handle = h;
             this.dao = h.attach(Dao.class);
-            process(config.repository, config.from, config.to);
+            h.useTransaction(h0 -> process(config.repository, config.from, config.to));
         }
-        log.debug("Finished");
+        log.info("Finished -- {} ms", w.elapsed(TimeUnit.MILLISECONDS));
         return 0;
     }
 
