@@ -19,14 +19,8 @@ import yoshikihigo.cpanalyzer.CPAConfig;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayDeque;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
@@ -67,28 +61,21 @@ public class ExtractCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        Stopwatch w = Stopwatch.createStarted();
-        final Jdbi jdbi = initializeDatabase();
-        try (final Handle h = jdbi.open()) {
-            this.handle = h;
-            this.dao = h.attach(Dao.class);
-            h.useTransaction(h0 -> process(config.repository, config.from, config.to));
-            // process(config.repository, config.from, config.to);
-            this.dao = null;
-            this.handle = null;
-        }
-        log.info("Finished -- {} ms", w.elapsed(TimeUnit.MILLISECONDS));
-        return 0;
-    }
-
-    private Jdbi initializeDatabase() {
+        final Stopwatch w = Stopwatch.createStarted();
         try {
             Files.deleteIfExists(config.database);
-            Database.initializeDatabase(config.database);
+            final Jdbi jdbi = Database.openDatabase(config.database);
+            try (final Handle h = this.handle = jdbi.open()) {
+                Database.initializeDatabase(h);
+                this.dao = h.attach(Dao.class);
+                h.useTransaction(h0 -> process(config.repository, config.from, config.to));
+            }
         } catch (final IOException e) {
             log.error(e);
+        } finally {
+            log.info("Finished -- {} ms", w.elapsed(TimeUnit.MILLISECONDS));
         }
-        return Database.openDatabase(config.database);
+        return 0;
     }
 
     private void process(final Path repositoryPath, final String from, final String to) {

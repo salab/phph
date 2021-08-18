@@ -29,22 +29,21 @@ public class Database {
     }
 
     public static Jdbi openDatabase(final Path path) {
-        final Jdbi jdbi = Jdbi.create("jdbc:sqlite:" + path.toString());
+        final String uri = "jdbc:sqlite:" + path.toString();
+        log.debug("Opening JDBC URI: {}", uri);
+        final Jdbi jdbi = Jdbi.create(uri);
         jdbi.setSqlLogger(new Logger());
         jdbi.installPlugin(new SqlObjectPlugin());
         return jdbi;
     }
 
-    public static void initializeDatabase(final Path path) throws IOException {
-        Jdbi jdbi = openDatabase(path);
+    public static void initializeDatabase(final Handle h) throws IOException {
         final String schema = Files.readString(Paths.get(SCHEMA_PATH));
-        try (final Handle h = jdbi.open()) {
-            Stream.of(schema.split(";"))
-                    .map(s -> s.trim().replaceAll("\\n\\s*", " ")) // TODO: -- comment
-                    .filter(s -> !s.isEmpty())
-                    .forEach(h::execute);
-            log.info("{}: Tables created", path);
-        }
+        Stream.of(schema.split(";"))
+                .map(s -> s.trim().replaceAll("\\n\\s*", " "))
+                .filter(s -> !s.isEmpty())
+                .forEach(h::execute);
+        log.info("Tables created");
     }
 
     public static class Logger implements SqlLogger {
