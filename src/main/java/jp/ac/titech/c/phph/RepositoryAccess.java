@@ -24,22 +24,22 @@ public class RepositoryAccess implements AutoCloseable {
     private final Repository repository;
 
     @Getter
-    private final RevWalk walk;
+    private RevWalk walkCache;
 
     @Getter
-    private final ObjectReader reader;
+    private ObjectReader readerCache;
 
     public RepositoryAccess(final Repository repository) {
         this.repository = repository;
         repository.incrementOpen();
-        this.walk = new RevWalk(repository);
-        this.reader = repository.newObjectReader();
     }
 
     public RepositoryAccess(final Path path) {
-        this.repository = createRepository(path);
-        this.walk = new RevWalk(repository);
-        this.reader = repository.newObjectReader();
+        this.repository =  createRepository(path);
+    }
+
+    public RepositoryAccess inherit() {
+        return new RepositoryAccess(repository);
     }
 
     /**
@@ -67,12 +67,32 @@ public class RepositoryAccess implements AutoCloseable {
     }
 
     /**
+     * Obtains a RevWalk.
+     */
+    protected RevWalk getWalk() {
+        if (walkCache == null) {
+            walkCache = new RevWalk(repository);
+        }
+        return walkCache;
+    }
+
+    /**
+     * Obtains an ObjectReader.
+     */
+    protected ObjectReader getReader() {
+        if (readerCache == null) {
+            readerCache = repository.newObjectReader();
+        }
+        return readerCache;
+    }
+
+    /**
      * Resolves a revision name to a RevCommit.
      */
     public RevCommit resolve(final String name) {
         try {
             final ObjectId commitId = repository.resolve(name);
-            return walk.parseCommit(commitId);
+            return getWalk().parseCommit(commitId);
         } catch (final IOException e) {
             log.error(e);
             return null;
@@ -83,6 +103,8 @@ public class RepositoryAccess implements AutoCloseable {
      * Walk commits.
      */
     public Iterable<RevCommit> walk(final String commitFrom, final String commitTo) {
+        final RevWalk walk = getWalk();
+
         // from: exclusive (from, to]
         if (commitFrom != null) {
             try {
@@ -114,7 +136,7 @@ public class RepositoryAccess implements AutoCloseable {
      */
     public String readBlob(final ObjectId blobId) {
         try {
-            final ObjectLoader loader = reader.open(blobId, Constants.OBJ_BLOB);
+            final ObjectLoader loader = getReader().open(blobId, Constants.OBJ_BLOB);
             final RawText rawText = new RawText(loader.getCachedBytes());
             // TODO UTF-8 only
             return rawText.getString(0, rawText.size(), false);
@@ -140,11 +162,11 @@ public class RepositoryAccess implements AutoCloseable {
 
     @Override
     public void close() {
-        if (reader != null) {
-            reader.close();
+        if (readerCache != null) {
+            readerCache.close();
         }
-        if (walk != null) {
-            walk.close();
+        if (walkCache != null) {
+            walkCache.close();
         }
         repository.close();
     }
