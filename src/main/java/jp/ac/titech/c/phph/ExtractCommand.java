@@ -43,6 +43,10 @@ public class ExtractCommand implements Callable<Integer> {
         @Option(names = {"-f", "--database"}, paramLabel = "<db>", description = "database file path")
         Path database = Path.of("phph.db");
 
+        @Option(names = { "-p", "--parallel" }, paramLabel = "<nthreads>", description = "number of threads to use in parallel",
+                arity = "0..1", fallbackValue = "0")
+        int nthreads = 1;
+
         @Option(names = "--from", paramLabel = "<rev>", description = "Revision to skip go further (exclusive)")
         String from;
 
@@ -92,24 +96,12 @@ public class ExtractCommand implements Callable<Integer> {
             log.info("Process {}", repositoryPath);
             final long repoId = dao.insertRepository(repositoryPath.toString());
 
-            final ExecutorService pool = Executors.newFixedThreadPool(4);
-            final Queue<Future<Consumer<Dao>>> queue = new ArrayDeque<>();
-
+            final TaskQueue<Dao> queue = new TaskQueue<>(config.nthreads);
             for (final RevCommit c : ra.walk(from, to)) {
                 final ChunkExtractor extractor = new ChunkExtractor(ra.inherit());
-                queue.add(pool.submit(() -> process(c, repoId, extractor)));
+                queue.register(() -> process(c, repoId, extractor));
             }
-
-            try {
-                while (!queue.isEmpty()) {
-                    queue.poll().get().accept(dao);
-                }
-            } catch (final ExecutionException | InterruptedException e) {
-                e.printStackTrace();
-                log.error(e);
-            } finally {
-                pool.shutdown();
-            }
+            queue.consumeAll(dao);
         }
     }
 
