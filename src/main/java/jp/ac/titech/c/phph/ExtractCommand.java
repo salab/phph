@@ -1,14 +1,24 @@
 package jp.ac.titech.c.phph;
 
-import jp.ac.titech.c.phph.model.Change;
+import jp.ac.titech.c.phph.db.Database;
+import jp.ac.titech.c.phph.model.Chunk;
+import jp.ac.titech.c.phph.db.Dao;
 import jp.ac.titech.c.phph.model.Pattern;
-import jp.ac.titech.c.phph.parse.ChangeExtractor;
+import jp.ac.titech.c.phph.parse.ChunkExtractor;
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.jgit.revwalk.RevCommit;
-import picocli.CommandLine.*;
+import org.jdbi.v3.core.Handle;
+import org.jdbi.v3.core.Jdbi;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.ParentCommand;
 import yoshikihigo.cpanalyzer.CPAConfig;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 @Log4j2
@@ -34,36 +44,55 @@ public class ExtractCommand implements Callable<Integer> {
     @Mixin
     Config config = new Config();
 
+    Handle handle;
+
+    Dao dao;
+
     static {
         CPAConfig.initialize(new String[] {"-n", "-cs", "10"});
     }
 
     @Override
     public Integer call() {
-        process(config.repository, config.from, config.to);
+        final Jdbi jdbi = initializeDatabase();
+        try (final Handle h = jdbi.open()) {
+            this.handle = h;
+            this.dao = h.attach(Dao.class);
+            process(config.repository, config.from, config.to);
+        }
         log.debug("Finished");
         return 0;
     }
 
-    private void process(final Path repositoryPath, final String from, final String to) {
-        try (final RepositoryAccess ra = new RepositoryAccess(repositoryPath)) {
-            log.info("Process {}", repositoryPath);
-            final ChangeExtractor extractor = new ChangeExtractor(ra);
-            for (final RevCommit c : ra.walk(from, to)) {
-                if (c.getParentCount() > 1) {
-                    log.debug("Skip {} (merge commit)", c.getId().name());
-                } else {
-                    log.debug("Process {}", c.getId().name());
-                    process(c, extractor);
-                }
-            }
+    private Jdbi initializeDatabase() {
+        try {
+            Files.deleteIfExists(config.database);
+            Database.initializeDatabase(config.database);
+        } catch (final IOException e) {
+            log.error(e);
         }
+        return Database.openDatabase(config.database);
     }
 
-    private void process(final RevCommit c, final ChangeExtractor extractor) {
-        for (final Change chg : extractor.process(c)) {
-            final Pattern p = chg.toPattern();
-            log.debug("[{}] {} at {}:{}", p.getHash().abbreviate(6).name(), p, chg.getFile(), chg.getNewOffset());
+    private void process(final Path repositoryPath, final String from, final String to) {
+        final long repoId = dao.insertRepository(repositoryPath.toString());
+        try (final RepositoryAccess ra = new RepositoryAccess(repositoryPath)) {
+            log.info("Process {}", repositoryPath);
+            final ChunkExtractor extractor = new ChunkExtractor(ra);
+            for (final RevCommit c : ra.walk(from, to)) {
+                final List<Chunk> changes = extractor.process(c);
+                if (!changes.isEmpty()) {
+                    final long commitId = dao.insertCommit(repoId, c.getId().name(), c.getFullMessage());
+                    for (final Chunk chg : extractor.process(c)) {
+                        final Pattern p = chg.toPattern();
+                        log.debug("[{}] {} at {}:{} in {}", p.getHash().abbreviate(6).name(), p, chg.getFile(), chg.getNewBegin(), c.getId().name());
+                        dao.insertFragment(p.getOldFragment());
+                        dao.insertFragment(p.getNewFragment());
+                        dao.insertPattern(p);
+                        dao.insertChunk(commitId, chg, p.getHash().name());
+                    }
+                }
+            }
         }
     }
 }

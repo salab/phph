@@ -4,7 +4,7 @@ plugins {
 }
 
 repositories {
-    jcenter()
+    mavenCentral()
     maven { url 'https://jitpack.io' }
 }
 
@@ -16,6 +16,10 @@ dependencies {
     implementation 'info.picocli:picocli:4.6.1'
     implementation 'commons-io:commons-io:2.9.0'
     implementation 'com.github.YoshikiHigo:MPAnalyzer:v0.1.1'
+
+    implementation 'org.xerial:sqlite-jdbc:3.36.0.1'
+    implementation 'org.jdbi:jdbi3-core:3.21.0'
+    implementation 'org.jdbi:jdbi3-sqlobject:3.21.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'

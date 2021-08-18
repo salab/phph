@@ -3,7 +3,7 @@ package jp.ac.titech.c.phph.parse;
 import jp.ac.titech.c.phph.RepositoryAccess;
 import jp.ac.titech.c.phph.diff.Differencer;
 import jp.ac.titech.c.phph.diff.DynamicProgrammingDifferencer;
-import jp.ac.titech.c.phph.model.Change;
+import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.model.Statement;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Log4j2
-public class ChangeExtractor {
+public class ChunkExtractor {
 
     final Differencer<Statement> differencer = new DynamicProgrammingDifferencer<>();
 
@@ -23,14 +23,14 @@ public class ChangeExtractor {
 
     final RepositoryAccess ra;
 
-    public ChangeExtractor(final RepositoryAccess ra) {
+    public ChunkExtractor(final RepositoryAccess ra) {
         this.ra = ra;
     }
 
     /**
      * Processes a commit and obtains a list of changes.
      */
-    public List<Change> process(final RevCommit c) {
+    public List<Chunk> process(final RevCommit c) {
         final List<DiffEntry> entries = ra.getChanges(c);
         log.debug("{}: {} changed files", c.getId().name(), entries.size());
         return entries.stream()
@@ -53,12 +53,12 @@ public class ChangeExtractor {
     /**
      * Extracts a stream of changes from a DiffEntry.
      */
-    protected Stream<Change> extractChanges(final DiffEntry entry) {
+    protected Stream<Chunk> extractChanges(final DiffEntry entry) {
         final String oldSource = ra.readBlob(entry.getOldId().toObjectId());
         final String newSource = ra.readBlob(entry.getNewId().toObjectId());
         final List<Statement> oldStatements = statementExtractor.extractStatements(oldSource);
         final List<Statement> newStatements = statementExtractor.extractStatements(newSource);
         return differencer.compute(oldStatements, newStatements).stream()
-                .map(e -> Change.of(entry.getNewPath(), oldStatements, newStatements, e));
+                .map(e -> Chunk.of(entry.getNewPath(), oldStatements, newStatements, e));
     }
 }

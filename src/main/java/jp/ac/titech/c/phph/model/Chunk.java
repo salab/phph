@@ -3,6 +3,7 @@ package jp.ac.titech.c.phph.model;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import org.eclipse.jgit.diff.Edit;
 
 import java.util.List;
@@ -12,7 +13,8 @@ import java.util.List;
  */
 @EqualsAndHashCode
 @AllArgsConstructor
-public class Change {
+@ToString(of = {"file", "oldBegin", "oldEnd", "newBegin", "newEnd"})
+public class Chunk {
     public enum Type {
         REPLACE,
         ADD,
@@ -24,18 +26,18 @@ public class Change {
     private final String file;
 
     @Getter
-    private final int oldBeginLine, oldEndLine;
+    private final int oldBegin, oldEnd;
 
     @Getter
     private final List<Statement> oldStatements;
 
     @Getter
-    private final int newBeginLine, newEndLine;
+    private final int newBegin, newEnd;
 
     @Getter
     private final List<Statement> newStatements;
 
-    public static Change of(final String file, final List<Statement> oldStatements, final List<Statement> newStatements, final Edit e) {
+    public static Chunk of(final String file, final List<Statement> oldStatements, final List<Statement> newStatements, final Edit e) {
         final List<Statement> oldSlice = oldStatements.subList(e.getBeginA(), e.getEndA());
         final List<Statement> newSlice = newStatements.subList(e.getBeginB(), e.getEndB());
 
@@ -56,7 +58,7 @@ public class Change {
             newBegin = newSlice.get(0).getBeginLine();
             newEnd = newSlice.get(newSlice.size() - 1).getEndLine();
         }
-        return new Change(file, oldBegin, oldEnd, oldSlice, newBegin, newEnd, newSlice);
+        return new Chunk(file, oldBegin, oldEnd, oldSlice, newBegin, newEnd, newSlice);
     }
 
     public Type getType() {

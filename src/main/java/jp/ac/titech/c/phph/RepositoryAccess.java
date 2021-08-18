@@ -9,6 +9,7 @@ import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
@@ -103,6 +104,8 @@ public class RepositoryAccess implements AutoCloseable {
                 log.error("Invalid rev: {} ({})", commitTo, e);
             }
         }
+
+        walk.setRevFilter(RevFilter.NO_MERGES);
         return walk;
     }
 
