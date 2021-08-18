@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.util.sha1.SHA1;
 
 import java.util.List;
 
@@ -29,7 +27,7 @@ public class Pattern {
     Fragment postContext; // NYI
 
     @Getter
-    ObjectId hash;
+    Hash hash;
 
     public static Pattern of(final Fragment oldFragment, final Fragment newFragment, final Fragment preContext, final Fragment postContext) {
         return new Pattern(oldFragment, newFragment, preContext, postContext, digest(oldFragment, newFragment, preContext, postContext));
@@ -48,20 +46,24 @@ public class Pattern {
         return oldFragment.toString() + " --> " + newFragment.toString();
     }
 
+    public String getSummary() {
+        return hash.abbreviate(6)
+                + ":" + oldFragment.getHash().abbreviate(6)
+                + "->" + newFragment.getHash().abbreviate(6);
+    }
+
     /**
      * Computes SHA1 from a string.
      */
-    public static ObjectId digest(final Fragment... fragments) {
-        final SHA1 sha1 = SHA1.newInstance();
-        final byte[] buf = new byte[20];
-        for (final Fragment f : fragments) {
-            if (f != null) {
-                f.getHash().copyRawTo(buf, 0);
-                sha1.update(buf);
-            } else {
-                sha1.update((byte) 0);
+    public static Hash digest(final Fragment... fragments) {
+        return Hash.of(md -> {
+            for (final Fragment f : fragments) {
+                if (f != null) {
+                    md.update(f.getHash().getRaw());
+                } else {
+                    md.update((byte) 0);
+                }
             }
-        }
-        return sha1.toObjectId();
+        });
     }
 }

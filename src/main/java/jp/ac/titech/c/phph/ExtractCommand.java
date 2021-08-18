@@ -62,6 +62,8 @@ public class ExtractCommand implements Callable<Integer> {
             this.handle = h;
             this.dao = h.attach(Dao.class);
             h.useTransaction(h0 -> process(config.repository, config.from, config.to));
+            this.dao = null;
+            this.handle = null;
         }
         log.info("Finished -- {} ms", w.elapsed(TimeUnit.MILLISECONDS));
         return 0;
@@ -78,23 +80,30 @@ public class ExtractCommand implements Callable<Integer> {
     }
 
     private void process(final Path repositoryPath, final String from, final String to) {
-        final long repoId = dao.insertRepository(repositoryPath.toString());
         try (final RepositoryAccess ra = new RepositoryAccess(repositoryPath)) {
             log.info("Process {}", repositoryPath);
+            final long repoId = dao.insertRepository(repositoryPath.toString());
             final ChunkExtractor extractor = new ChunkExtractor(ra);
             for (final RevCommit c : ra.walk(from, to)) {
-                final List<Chunk> changes = extractor.process(c);
-                if (!changes.isEmpty()) {
-                    final long commitId = dao.insertCommit(repoId, c.getId().name(), c.getFullMessage());
-                    for (final Chunk chg : extractor.process(c)) {
-                        final Pattern p = chg.toPattern();
-                        log.debug("[{}] {} at {}:{} in {}", p.getHash().abbreviate(6).name(), p, chg.getFile(), chg.getNewBegin(), c.getId().name());
-                        dao.insertFragment(p.getOldFragment());
-                        dao.insertFragment(p.getNewFragment());
-                        dao.insertPattern(p);
-                        dao.insertChunk(commitId, chg, p.getHash().name());
-                    }
+                process(c, repoId, extractor);
+            }
+        }
+    }
+
+    private void process(final RevCommit c, final long repoId, final ChunkExtractor extractor) {
+        final List<Chunk> chunks = extractor.extract(c);
+        if (!chunks.isEmpty()) {
+            final long commitId = dao.insertCommit(repoId, c.getId().name(), c.getFullMessage());
+            for (final Chunk h : chunks) {
+                final Pattern p = h.toPattern();
+                if (log.isDebugEnabled()) {
+                    log.debug("[{}] {} at {}:{} in {}",
+                            p.getSummary(), p, h.getFile(), h.getNewBegin(), c.getId().name());
                 }
+                dao.insertFragment(p.getOldFragment());
+                dao.insertFragment(p.getNewFragment());
+                dao.insertPattern(p);
+                dao.insertChunk(commitId, h, p);
             }
         }
     }

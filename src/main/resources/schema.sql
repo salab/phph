@@ -22,14 +22,14 @@ CREATE TABLE chunks (
     old_end INTEGER,
     new_begin INTEGER,
     new_end INTEGER,
-    pattern TEXT,
+    pattern BLOB,
     UNIQUE (commit_id, file, old_begin, new_begin)
 );
 
 CREATE TABLE fragments (
     /* id INTEGER PRIMARY KEY AUTOINCREMENT, */
     text TEXT,
-    hash TEXT UNIQUE
+    hash BLOB UNIQUE
     /* , UNIQUE (text) */
 );
 CREATE INDEX fragments_hash on fragments(hash);
@@ -40,7 +40,7 @@ CREATE TABLE patterns (
     new TEXT,
     /* pre TEXT, */
     /* post TEXT, */
-    hash TEXT UNIQUE
+    hash BLOB UNIQUE
     /* , UNIQUE (old, new, pre, post) */
 );
 CREATE INDEX patterns_old_hash on patterns(old);

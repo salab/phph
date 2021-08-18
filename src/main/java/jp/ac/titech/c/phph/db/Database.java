@@ -50,11 +50,11 @@ public class Database {
     public static class Logger implements SqlLogger {
         @Override
         public void logBeforeExecution(final StatementContext c) {
-            if (log.isDebugEnabled()) {
+            if (log.isTraceEnabled()) {
                 if (c.getBinding().isEmpty()) {
-                    log.debug("[SQL] {}", c.getParsedSql().getSql());
+                    log.trace("[SQL] {}", c.getParsedSql().getSql());
                 } else {
-                    log.debug("[SQL] {} << {}", c.getParsedSql().getSql(), c.getBinding());
+                    log.trace("[SQL] {} << {}", c.getParsedSql().getSql(), c.getBinding());
                 }
             }
         }

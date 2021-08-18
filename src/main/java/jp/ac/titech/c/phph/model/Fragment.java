@@ -1,5 +1,8 @@
 package jp.ac.titech.c.phph.model;
 
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hasher;
+import com.google.common.hash.Hashing;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -23,10 +26,10 @@ public class Fragment {
     String text;
 
     @Getter
-    ObjectId hash;
+    Hash hash;
 
     public static Fragment of(final String text) {
-        return new Fragment(text, digest(text));
+        return new Fragment(text, text.isEmpty() ? Hash.ZERO : Hash.of(text));
     }
 
     public static Fragment of(final List<Statement> statements) {
@@ -39,18 +42,5 @@ public class Fragment {
     @Override
     public String toString() {
         return text.isEmpty() ? "``" : "`" + text.replace("\n", " ") + "`";
-    }
-
-    /**
-     * Computes SHA1 from a string.
-     */
-    public static ObjectId digest(final String text) {
-        if (text.isEmpty()) {
-            return ObjectId.zeroId();
-        } else {
-            final SHA1 sha1 = SHA1.newInstance();
-            sha1.update(text.getBytes(StandardCharsets.UTF_8));
-            return sha1.toObjectId();
-        }
     }
 }

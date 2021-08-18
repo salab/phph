@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 @Log4j2
 public class ChunkExtractor {
-
+    //final Differencer<Statement> differencer = JGitDifferencer.newMyers();
     final Differencer<Statement> differencer = new DynamicProgrammingDifferencer<>();
 
     final StatementExtractor statementExtractor = new MPAStatementExtractor();
@@ -30,7 +30,7 @@ public class ChunkExtractor {
     /**
      * Processes a commit and obtains a list of changes.
      */
-    public List<Chunk> process(final RevCommit c) {
+    public List<Chunk> extract(final RevCommit c) {
         final List<DiffEntry> entries = ra.getChanges(c);
         log.debug("{}: {} changed files", c.getId().name(), entries.size());
         return entries.stream()
