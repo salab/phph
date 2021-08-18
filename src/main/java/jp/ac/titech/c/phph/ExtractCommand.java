@@ -19,9 +19,16 @@ import yoshikihigo.cpanalyzer.CPAConfig;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 @Log4j2
 @Command(name = "extract", description = "Extract commits from a repository")
@@ -35,6 +42,10 @@ public class ExtractCommand implements Callable<Integer> {
 
         @Option(names = {"-f", "--database"}, paramLabel = "<db>", description = "database file path")
         Path database = Path.of("phph.db");
+
+        @Option(names = { "-p", "--parallel" }, paramLabel = "<nthreads>", description = "number of threads to use in parallel",
+                arity = "0..1", fallbackValue = "0")
+        int nthreads = 1;
 
         @Option(names = "--from", paramLabel = "<rev>", description = "Revision to skip go further (exclusive)")
         String from;
@@ -62,6 +73,7 @@ public class ExtractCommand implements Callable<Integer> {
             this.handle = h;
             this.dao = h.attach(Dao.class);
             h.useTransaction(h0 -> process(config.repository, config.from, config.to));
+            // process(config.repository, config.from, config.to);
             this.dao = null;
             this.handle = null;
         }
@@ -83,28 +95,38 @@ public class ExtractCommand implements Callable<Integer> {
         try (final RepositoryAccess ra = new RepositoryAccess(repositoryPath)) {
             log.info("Process {}", repositoryPath);
             final long repoId = dao.insertRepository(repositoryPath.toString());
-            final ChunkExtractor extractor = new ChunkExtractor(ra);
+
+            final TaskQueue<Dao> queue = new TaskQueue<>(config.nthreads);
             for (final RevCommit c : ra.walk(from, to)) {
-                process(c, repoId, extractor);
+                final ChunkExtractor extractor = new ChunkExtractor(ra.inherit());
+                queue.register(() -> process(c, repoId, extractor));
             }
+            queue.consumeAll(dao);
         }
     }
 
-    private void process(final RevCommit c, final long repoId, final ChunkExtractor extractor) {
+    private Consumer<Dao> process(final RevCommit c, final long repoId, final ChunkExtractor extractor) {
         final List<Chunk> chunks = extractor.extract(c);
-        if (!chunks.isEmpty()) {
+        if (chunks.isEmpty()) {
+            return (dao) -> {};
+        }
+
+        // pre-computes patterns
+        for (final Chunk h : chunks) {
+            final Pattern p = h.getPattern();
+            if (log.isDebugEnabled()) {
+                log.debug("[{}] {} at {}:{} in {}", p.getSummary(), p, h.getFile(), h.getNewBegin(), c.getId().name());
+            }
+        }
+        return (dao) -> {
             final long commitId = dao.insertCommit(repoId, c.getId().name(), c.getFullMessage());
             for (final Chunk h : chunks) {
-                final Pattern p = h.toPattern();
-                if (log.isDebugEnabled()) {
-                    log.debug("[{}] {} at {}:{} in {}",
-                            p.getSummary(), p, h.getFile(), h.getNewBegin(), c.getId().name());
-                }
+                final Pattern p = h.getPattern();
                 dao.insertFragment(p.getOldFragment());
                 dao.insertFragment(p.getNewFragment());
                 dao.insertPattern(p);
                 dao.insertChunk(commitId, h, p);
             }
-        }
+        };
     }
 }

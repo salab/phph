@@ -32,7 +32,6 @@ public class ChunkExtractor {
      */
     public List<Chunk> extract(final RevCommit c) {
         final List<DiffEntry> entries = ra.getChanges(c);
-        log.debug("{}: {} changed files", c.getId().name(), entries.size());
         return entries.stream()
                 .filter(e -> isSupportedFileChange(e, "java"))
                 .flatMap(e -> extractChanges(e))

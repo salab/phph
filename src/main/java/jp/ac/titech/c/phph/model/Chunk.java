@@ -1,8 +1,8 @@
 package jp.ac.titech.c.phph.model;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.eclipse.jgit.diff.Edit;
 
@@ -11,8 +11,7 @@ import java.util.List;
 /**
  * A deleted and added sequence of statements.
  */
-@EqualsAndHashCode
-@AllArgsConstructor
+@RequiredArgsConstructor
 @ToString(of = {"file", "oldBegin", "oldEnd", "newBegin", "newEnd"})
 public class Chunk {
     public enum Type {
@@ -36,6 +35,8 @@ public class Chunk {
 
     @Getter
     private final List<Statement> newStatements;
+
+    private transient Pattern pattern;
 
     public static Chunk of(final String file, final List<Statement> oldStatements, final List<Statement> newStatements, final Edit e) {
         final List<Statement> oldSlice = oldStatements.subList(e.getBeginA(), e.getEndA());
@@ -69,7 +70,10 @@ public class Chunk {
         }
     }
 
-    public Pattern toPattern() {
-        return Pattern.of(oldStatements, newStatements);
+    public Pattern getPattern() {
+        if (pattern == null) {
+            pattern = Pattern.of(oldStatements, newStatements);
+        }
+        return pattern;
     }
 }
