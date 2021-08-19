@@ -24,7 +24,7 @@ public class Database {
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (final ClassNotFoundException e) {
-            e.printStackTrace();
+            log.error(e.getMessage(), e);
         }
     }
 
@@ -60,7 +60,7 @@ public class Database {
 
         @Override
         public void logException(final StatementContext c, final SQLException e) {
-            log.error(e);
+            log.error(e.getMessage(), e);
         }
     }
 }

@@ -66,7 +66,7 @@ public class Hash {
             fn.accept(md);
             return md.digest();
         } catch (final NoSuchAlgorithmException e) {
-            log.error(e);
+            log.error(e.getMessage(), e);
             return null;
         }
     }

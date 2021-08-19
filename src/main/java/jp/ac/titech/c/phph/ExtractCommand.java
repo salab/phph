@@ -71,7 +71,7 @@ public class ExtractCommand implements Callable<Integer> {
                 h.useTransaction(h0 -> process(config.repository, config.from, config.to));
             }
         } catch (final IOException e) {
-            log.error(e);
+            log.error(e.getMessage(), e);
         } finally {
             log.info("Finished -- {} ms", w.elapsed(TimeUnit.MILLISECONDS));
         }

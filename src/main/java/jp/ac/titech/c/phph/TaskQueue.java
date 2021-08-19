@@ -44,11 +44,13 @@ public class TaskQueue<T> {
             while (!queue.isEmpty()) {
                 queue.poll().get().accept(t);
             }
-        } catch (final ExecutionException | InterruptedException e) {
-            log.error(e);
-            log.error(e.getCause());
-        } finally {
+        } catch (final ExecutionException e) {
+            log.error(e.getMessage(), e);
+            log.error(e.getCause().getMessage(), e.getCause());
+        } catch (final InterruptedException e) {
+            log.error(e.getMessage(), e);
+       } finally {
             pool.shutdown();
-        }
+       }
     }
 }

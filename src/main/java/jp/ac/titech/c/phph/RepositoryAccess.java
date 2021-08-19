@@ -94,7 +94,7 @@ public class RepositoryAccess implements AutoCloseable {
             final ObjectId commitId = repository.resolve(name);
             return getWalk().parseCommit(commitId);
         } catch (final IOException e) {
-            log.error(e);
+            log.error(e.getMessage(), e);
             return null;
         }
     }
@@ -141,7 +141,7 @@ public class RepositoryAccess implements AutoCloseable {
             // TODO UTF-8 only
             return rawText.getString(0, rawText.size(), false);
         } catch (final IOException e) {
-            log.error(e);
+            log.error(e.getMessage(), e);
             return "";
         }
     }
@@ -155,7 +155,7 @@ public class RepositoryAccess implements AutoCloseable {
             final ObjectId parentId = c.getParentCount() == 1 ? c.getParent(0).getId() : null;
             return fmt.scan(parentId, c.getId());
         } catch (final IOException e) {
-            log.error(e);
+            log.error(e.getMessage(), e);
             return Collections.emptyList();
         }
     }
