@@ -9,6 +9,7 @@ import lombok.extern.log4j.Log4j2;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 /**
@@ -17,7 +18,7 @@ import java.util.function.Consumer;
 @Value
 @EqualsAndHashCode(of = "raw")
 @Log4j2
-public class Hash {
+public class Hash implements Comparable<Hash> {
     public static final Hash ZERO = Hash.of(new byte[16]);
 
     protected static final BaseEncoding BASE16L = BaseEncoding.base16().lowerCase();
@@ -69,5 +70,10 @@ public class Hash {
             log.error(e.getMessage(), e);
             return null;
         }
+    }
+
+    @Override
+    public int compareTo(final Hash other) {
+        return Arrays.compare(raw, other.raw);
     }
 }
