@@ -39,7 +39,7 @@ public class ChunkExtractor {
     }
 
     /**
-     * Checks the filteriing criteria.
+     * Checks the filtering criteria.
      */
     protected boolean isSupportedFileChange(final DiffEntry e, final String extension) {
         final String oldPath = e.getOldPath();
