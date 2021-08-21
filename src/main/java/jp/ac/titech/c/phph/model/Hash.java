@@ -16,7 +16,6 @@ import java.util.function.Consumer;
  * A hash code.
  */
 @Value
-@EqualsAndHashCode(of = "raw")
 @Log4j2
 public class Hash implements Comparable<Hash> {
     public static final Hash ZERO = Hash.of(new byte[16]);
