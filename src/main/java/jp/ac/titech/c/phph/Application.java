@@ -6,11 +6,15 @@ import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import picocli.CommandLine;
-import picocli.CommandLine.*;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.ITypeConverter;
+import picocli.CommandLine.Mixin;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.RunAll;
 
 @Log4j2
 @Command(version = "phph", sortOptions = false,
-         subcommands = {ExtractCommand.class})
+         subcommands = {ExtractCommand.class, MeasureCommand.class})
 public class Application implements Callable<Integer> {
     public static class LevelConverter implements ITypeConverter<Level> {
         @Override
