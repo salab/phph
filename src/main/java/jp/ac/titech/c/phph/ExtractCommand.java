@@ -1,17 +1,16 @@
 package jp.ac.titech.c.phph;
 
-import com.github.durun.nitron.core.config.LangConfig;
-import com.github.durun.nitron.core.config.NitronConfig;
-import com.github.durun.nitron.core.config.loader.NitronConfigLoader;
 import com.google.common.base.Stopwatch;
 import jp.ac.titech.c.phph.db.Database;
+import jp.ac.titech.c.phph.diff.Differencer;
+import jp.ac.titech.c.phph.diff.DifferencerFactory;
 import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.db.Dao;
 import jp.ac.titech.c.phph.model.Pattern;
+import jp.ac.titech.c.phph.model.Statement;
 import jp.ac.titech.c.phph.parse.ChunkExtractor;
-import jp.ac.titech.c.phph.parse.MPASplitter;
-import jp.ac.titech.c.phph.parse.NitronSplitter;
 import jp.ac.titech.c.phph.parse.Splitter;
+import jp.ac.titech.c.phph.parse.SplitterFactory;
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.jdbi.v3.core.Handle;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -36,7 +34,6 @@ public class ExtractCommand implements Callable<Integer> {
     @ParentCommand
     Application app;
 
-    public enum SplitterType { mpa, nitron }
 
     public static class Config {
         @Option(names = {"-r", "--repository"}, paramLabel = "<repo>", description = "repository path")
@@ -45,7 +42,7 @@ public class ExtractCommand implements Callable<Integer> {
         @Option(names = {"-f", "--database"}, paramLabel = "<db>", description = "database file path")
         Path database = Path.of("phph.db");
 
-        @Option(names = { "-p", "--parallel" }, paramLabel = "<nthreads>", description = "number of threads to use in parallel",
+        @Option(names = {"-p", "--parallel"}, paramLabel = "<nthreads>", description = "number of threads to use in parallel",
                 arity = "0..1", fallbackValue = "0")
         int nthreads = 1;
 
@@ -55,25 +52,33 @@ public class ExtractCommand implements Callable<Integer> {
         @Option(names = "--end", paramLabel = "<rev>", description = "Revision to start traversing (default: ${DEFAULT-VALUE})")
         String to = "HEAD";
 
-        @Option(names= "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
-        SplitterType splitter = SplitterType.mpa;
+        @Option(names = "--differencer", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+        DifferencerFactory.Type differencer = DifferencerFactory.Type.dp;
+
+        @Option(names = "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+        SplitterFactory.Type splitter = SplitterFactory.Type.mpa;
+
+        @Option(names = "--min-size", description = "Minimum chunk size (default: ${DEFAULT-VALUE})")
+        int minChunkSize = 0;
+
+        @Option(names = "--max-size", description = "Maximum chunk size (default: Integer.MAX_VALUE)")
+        int maxChunkSize = Integer.MAX_VALUE;
     }
 
     @Mixin
     Config config = new Config();
 
-    Splitter splitter;
-
     Handle handle;
 
     Dao dao;
+
+    ChunkExtractor extractor;
 
     @Override
     public Integer call() {
         final Stopwatch w = Stopwatch.createStarted();
         try {
-            this.splitter = createSplitter(config.splitter);
-
+            setupChunkExtractor();
             Files.deleteIfExists(config.database);
             final Jdbi jdbi = Database.openDatabase(config.database);
             try (final Handle h = this.handle = jdbi.open()) {
@@ -89,21 +94,6 @@ public class ExtractCommand implements Callable<Integer> {
         return 0;
     }
 
-    private Splitter createSplitter(final SplitterType type) {
-        switch (type) {
-            case mpa:
-                return new MPASplitter();
-            case nitron:
-                final Path path = Path.of(ClassLoader.getSystemResource("nitronConfig/nitron.json").getPath());
-                final NitronConfig nitronConfig = NitronConfigLoader.INSTANCE.load(path);
-                final LangConfig langConfig = Objects.requireNonNull(nitronConfig.getLangConfig().get("java-jdt"));
-                return new NitronSplitter(langConfig);
-            default:
-                assert false;
-                return null;
-        }
-    }
-
     private void process(final Path repositoryPath, final String from, final String to) {
         try (final RepositoryAccess ra = new RepositoryAccess(repositoryPath)) {
             log.info("Process {}", repositoryPath);
@@ -111,15 +101,14 @@ public class ExtractCommand implements Callable<Integer> {
 
             final TaskQueue<Dao> queue = new TaskQueue<>(config.nthreads);
             for (final RevCommit c : ra.walk(from, to)) {
-                final ChunkExtractor extractor = new ChunkExtractor(splitter, ra.inherit());
-                queue.register(() -> process(c, repoId, extractor));
+                queue.register(() -> process(c, repoId, ra.inherit()));
             }
             queue.consumeAll(dao);
         }
     }
 
-    private Consumer<Dao> process(final RevCommit c, final long repoId, final ChunkExtractor extractor) {
-        final List<Chunk> chunks = extractor.extract(c);
+    private Consumer<Dao> process(final RevCommit c, final long repoId, final RepositoryAccess ra) {
+        final List<Chunk> chunks = extractor.extract(c, ra);
         if (chunks.isEmpty()) {
             return (dao) -> {};
         }
@@ -128,9 +117,9 @@ public class ExtractCommand implements Callable<Integer> {
         for (final Chunk h : chunks) {
             final Pattern p = h.getPattern();
             if (log.isDebugEnabled()) {
-                log.debug("[{}@{}] {} --> {} at {}:{} in {}",
+                log.debug("[{}@{}] {} --> {} at {}:{}",
                         p.toShortString(), c.getId().abbreviate(6).name(),
-                        h.getOldFragment(), h.getNewFragment(), h.getFile(), h.getNewBegin(), c.getId().name());
+                        h.getOldFragment(), h.getNewFragment(), h.getFile(), h.getNewBegin());
             }
         }
         return (dao) -> {
@@ -142,5 +131,11 @@ public class ExtractCommand implements Callable<Integer> {
                 dao.insertChunk(commitId, h);
             }
         };
+    }
+
+    private void setupChunkExtractor() {
+        final Differencer<Statement> differencer = DifferencerFactory.create(config.differencer);
+        final Splitter splitter = SplitterFactory.create(config.splitter);
+        this.extractor = new ChunkExtractor(differencer, splitter, config.minChunkSize, config.maxChunkSize);
     }
 }

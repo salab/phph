@@ -1,17 +1,11 @@
 package jp.ac.titech.c.phph.model;
 
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hasher;
-import com.google.common.hash.Hashing;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
-import org.eclipse.jgit.lib.ObjectId;
-import org.eclipse.jgit.util.sha1.SHA1;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,15 +22,23 @@ public class Fragment {
     @Getter
     Hash hash;
 
+    public static Fragment of(final String text, final Hash hash) {
+        return new Fragment(text, hash);
+    }
+
     public static Fragment of(final String text) {
         return new Fragment(text, text.isEmpty() ? Hash.ZERO : Hash.of(text));
     }
 
     public static Fragment of(final List<Statement> statements) {
         final String text = statements.stream()
-                .map(s -> s.getNormalized())
+                .map(Statement::getNormalized)
                 .collect(Collectors.joining("\n"));
         return of(text);
+    }
+
+    public Query toQuery() {
+        return new Query(this);
     }
 
     @Override

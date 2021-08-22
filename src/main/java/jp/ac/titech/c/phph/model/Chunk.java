@@ -44,7 +44,7 @@ public class Chunk {
         int oldBegin, oldEnd, newBegin, newEnd;
         if (oldSlice.isEmpty()) {
             // ADD
-            oldBegin = e.getBeginA() == oldStatements.size() ? oldStatements.get(oldStatements.size() - 1).getEndLine() : newStatements.get(e.getBeginA()).getBeginLine();
+            oldBegin = e.getBeginA() == oldStatements.size() ? oldStatements.get(oldStatements.size() - 1).getEndLine() : oldStatements.get(e.getBeginA()).getBeginLine();
             oldEnd = oldBegin;
         } else {
             oldBegin = oldSlice.get(0).getBeginLine();
