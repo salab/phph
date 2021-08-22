@@ -3,7 +3,10 @@ package jp.ac.titech.c.phph;
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,14 +30,15 @@ public class FileTree {
     /**
      * Obtains the contents of the given commit in a Git repository.
      */
-    public static Map<String, String> retrieveGitTree(final Path repository, final String revision, final String suffix) throws IOException {
+    public static Map<String, String> retrieveGitTree(final Path repository, final String revision, final String prefix, final String suffix) throws IOException {
         final Map<String, String> result = new TreeMap<>();
         try (final RepositoryAccess ra = new RepositoryAccess(repository)) {
             final RevCommit commit = ra.resolve(revision);
             final TreeWalk tw = new TreeWalk(ra.getReader());
             tw.addTree(commit.getTree());
             tw.setRecursive(true);
-            tw.setFilter(PathSuffixFilter.create(suffix));
+            tw.setFilter(AndTreeFilter.create(prefix == null ? TreeFilter.ALL : PathFilter.create(prefix),
+                                              suffix == null ? TreeFilter.ALL : PathSuffixFilter.create(suffix)));
             while (tw.next()) {
                 final String path = tw.getPathString();
                 final String source = ra.readBlob(tw.getObjectId(0));

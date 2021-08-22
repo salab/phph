@@ -52,6 +52,9 @@ public class FindCommand implements Callable<Integer> {
 
         @Option(names = "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         SplitterFactory.Type splitter = SplitterFactory.Type.mpa;
+
+        @Option(names = "--prefix", paramLabel = "<path>", description = "path prefix")
+        String prefix = null;
     }
 
     @Mixin
@@ -84,7 +87,7 @@ public class FindCommand implements Callable<Integer> {
 
     protected void process() throws IOException {
         log.debug("Retrieving source code...");
-        this.sources = FileTree.retrieveGitTree(config.repository, config.revision, ".java");
+        this.sources = FileTree.retrieveGitTree(config.repository, config.revision, config.prefix, ".java");
         this.finder = buildFinder();
 
         log.debug("Clearing matching table...");
