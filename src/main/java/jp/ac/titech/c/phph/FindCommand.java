@@ -106,13 +106,15 @@ public class FindCommand implements Callable<Integer> {
         if (query.isEmpty()) {
             return (dao) -> {};
         }
-        log.debug("Querying {} = [{}]", fragment.getHash().abbreviate(6), query);
+        if (log.isTraceEnabled()) {
+            log.trace("Querying {} = [{}]", fragment.getHash().abbreviate(6), query);
+        }
 
         final List<Match> result = new ArrayList<>();
         for (final SourceFile file : getCandidateFiles(query)) {
             for (final Match match : file.find(query)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("{} matched to {}:{}", query.getFragment().getHash().abbreviate(6), file.getPath(), match.getBeginLine());
+                    log.debug("{} matched at {}:{}", query.getFragment().getHash().abbreviate(6), file.getPath(), match.getBeginLine());
                 }
                 result.add(match);
             }
