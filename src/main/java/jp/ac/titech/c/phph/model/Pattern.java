@@ -27,6 +27,14 @@ public class Pattern {
     @Getter
     Hash hash;
 
+    public static Pattern of(final Hash oldHash, final Hash newHash, final Hash preContext, final Hash postContext, final Hash hash) {
+        return new Pattern(oldHash, newHash, preContext, postContext, hash);
+    }
+
+    public static Pattern of(final Hash oldHash, final Hash newHash, final Hash hash) {
+        return new Pattern(oldHash, newHash, Hash.ZERO, Hash.ZERO, hash);
+    }
+
     public static Pattern of(final Hash oldHash, final Hash newHash, final Hash preContext, final Hash postContext) {
         return new Pattern(oldHash, newHash, preContext, postContext, digest(oldHash, newHash, preContext, postContext));
     }
