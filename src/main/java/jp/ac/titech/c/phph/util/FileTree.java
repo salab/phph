@@ -1,4 +1,4 @@
-package jp.ac.titech.c.phph;
+package jp.ac.titech.c.phph.util;
 
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.jgit.revwalk.RevCommit;

@@ -1,4 +1,4 @@
-package jp.ac.titech.c.phph;
+package jp.ac.titech.c.phph.util;
 
 import com.google.common.util.concurrent.MoreExecutors;
 import lombok.extern.log4j.Log4j2;

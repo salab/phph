@@ -1,4 +1,4 @@
-package jp.ac.titech.c.phph;
+package jp.ac.titech.c.phph.util;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;

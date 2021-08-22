@@ -2,8 +2,8 @@ package jp.ac.titech.c.phph.cmd;
 
 import com.google.common.base.Stopwatch;
 import jp.ac.titech.c.phph.Application;
-import jp.ac.titech.c.phph.RepositoryAccess;
-import jp.ac.titech.c.phph.TaskQueue;
+import jp.ac.titech.c.phph.util.RepositoryAccess;
+import jp.ac.titech.c.phph.util.TaskQueue;
 import jp.ac.titech.c.phph.db.Database;
 import jp.ac.titech.c.phph.diff.Differencer;
 import jp.ac.titech.c.phph.diff.DifferencerFactory;

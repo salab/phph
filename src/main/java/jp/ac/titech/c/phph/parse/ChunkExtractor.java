@@ -1,6 +1,6 @@
 package jp.ac.titech.c.phph.parse;
 
-import jp.ac.titech.c.phph.RepositoryAccess;
+import jp.ac.titech.c.phph.util.RepositoryAccess;
 import jp.ac.titech.c.phph.diff.Differencer;
 import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.model.Statement;
