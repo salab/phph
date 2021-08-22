@@ -70,6 +70,12 @@ public interface Dao {
     @SqlUpdate("UPDATE patterns AS p SET confidenceC = CAST(p.supportC AS REAL) / (SELECT sum(p2.supportC) FROM patterns AS p2 WHERE p2.old = p.old)")
     void computeConfidenceC();
 
+    @SqlUpdate("UPDATE patterns AS p SET matchO = (SELECT count(*) FROM matches AS m WHERE m.query = p.old)")
+    void computeMatchO();
+
+    @SqlUpdate("UPDATE patterns AS p SET matchN = (SELECT count(*) FROM matches AS m WHERE m.query = p.new)")
+    void computeMatchN();
+
     @SqlQuery("SELECT * FROM patterns")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatterns();
@@ -97,5 +103,5 @@ public interface Dao {
     long insertMatch(@BindBean("m") final Match match);
 
     @SqlUpdate("DELETE FROM matches")
-    long clearMatches();
+    void clearMatches();
 }

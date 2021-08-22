@@ -45,6 +45,8 @@ CREATE TABLE patterns (
     supportC INTEGER,
     confidenceH REAL,
     confidenceC REAL,
+    matchO INTEGER,
+    matchN INTEGER,
     UNIQUE (old, new)
 );
 CREATE INDEX patterns_old_hash on patterns(old);

@@ -48,5 +48,9 @@ public class MeasureCommand implements Callable<Integer> {
         dao.computeConfidenceH();
         log.debug("Compute commit-based confidence...");
         dao.computeConfidenceC();
+        log.debug("Compute MatchO...");
+        dao.computeMatchO();
+        log.debug("Compute MatchN...");
+        dao.computeMatchN();
     }
 }
