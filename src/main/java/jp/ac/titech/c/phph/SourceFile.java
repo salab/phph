@@ -31,7 +31,7 @@ public class SourceFile implements Comparable<SourceFile> {
     public SourceFile(final Path path, final List<Statement> statements) {
         this.path = path;
         this.statements = statements;
-        this.hashes = statements.stream().map(s -> Hash.of(s.getRaw())).collect(Collectors.toList());
+        this.hashes = statements.stream().map(s -> Hash.of(s.getNormalized())).collect(Collectors.toList());
         this.resolver = computeReverseResolver(hashes);
     }
 
