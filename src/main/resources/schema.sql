@@ -22,8 +22,7 @@ CREATE TABLE chunks (
     old_end INTEGER,
     new_begin INTEGER,
     new_end INTEGER,
-    pattern BLOB,
-    UNIQUE (commit_id, file, old_begin, new_begin)
+    pattern BLOB
 );
 
 CREATE TABLE fragments (
