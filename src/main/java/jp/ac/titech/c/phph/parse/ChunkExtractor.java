@@ -19,22 +19,19 @@ public class ChunkExtractor {
 
     private final Splitter splitter;
 
-    private final RepositoryAccess ra;
-
-    public ChunkExtractor(final Differencer<Statement> differncer, final Splitter splitter, final RepositoryAccess ra) {
-        this.differencer = differncer;
+    public ChunkExtractor(final Differencer<Statement> differencer, final Splitter splitter) {
+        this.differencer = differencer;
         this.splitter = splitter;
-        this.ra = ra;
     }
 
     /**
      * Processes a commit and obtains a list of changes.
      */
-    public List<Chunk> extract(final RevCommit c) {
+    public List<Chunk> extract(final RevCommit c, final RepositoryAccess ra) {
         final List<DiffEntry> entries = ra.getChanges(c);
         return entries.stream()
                 .filter(e -> isSupportedFileChange(e, "java"))
-                .flatMap(this::extractChanges)
+                .flatMap(e -> extractChanges(e, ra))
                 .collect(Collectors.toList());
     }
 
@@ -52,7 +49,7 @@ public class ChunkExtractor {
     /**
      * Extracts a stream of changes from a DiffEntry.
      */
-    protected Stream<Chunk> extractChanges(final DiffEntry entry) {
+    protected Stream<Chunk> extractChanges(final DiffEntry entry, final RepositoryAccess ra) {
         final String oldSource = ra.readBlob(entry.getOldId().toObjectId());
         final String newSource = ra.readBlob(entry.getNewId().toObjectId());
         final List<Statement> oldStatements = splitter.split(oldSource);

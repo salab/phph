@@ -75,10 +75,13 @@ public class ExtractCommand implements Callable<Integer> {
 
     Dao dao;
 
+    ChunkExtractor extractor;
+
     @Override
     public Integer call() {
         final Stopwatch w = Stopwatch.createStarted();
         try {
+            setupChunkExtractor();
             Files.deleteIfExists(config.database);
             final Jdbi jdbi = Database.openDatabase(config.database);
             try (final Handle h = this.handle = jdbi.open()) {
@@ -92,6 +95,51 @@ public class ExtractCommand implements Callable<Integer> {
             log.info("Finished -- {} ms", w.elapsed(TimeUnit.MILLISECONDS));
         }
         return 0;
+    }
+
+    private void process(final Path repositoryPath, final String from, final String to) {
+        try (final RepositoryAccess ra = new RepositoryAccess(repositoryPath)) {
+            log.info("Process {}", repositoryPath);
+            final long repoId = dao.insertRepository(repositoryPath.toString());
+
+            final TaskQueue<Dao> queue = new TaskQueue<>(config.nthreads);
+            for (final RevCommit c : ra.walk(from, to)) {
+                queue.register(() -> process(c, repoId, ra.inherit()));
+            }
+            queue.consumeAll(dao);
+        }
+    }
+
+    private Consumer<Dao> process(final RevCommit c, final long repoId, final RepositoryAccess ra) {
+        final List<Chunk> chunks = extractor.extract(c, ra);
+        if (chunks.isEmpty()) {
+            return (dao) -> {};
+        }
+
+        // pre-computes patterns
+        for (final Chunk h : chunks) {
+            final Pattern p = h.getPattern();
+            if (log.isDebugEnabled()) {
+                log.debug("[{}@{}] {} --> {} at {}:{} in {}",
+                        p.toShortString(), c.getId().abbreviate(6).name(),
+                        h.getOldFragment(), h.getNewFragment(), h.getFile(), h.getNewBegin(), c.getId().name());
+            }
+        }
+        return (dao) -> {
+            final long commitId = dao.insertCommit(repoId, c.getId().name(), c.getFullMessage());
+            for (final Chunk h : chunks) {
+                dao.insertFragment(h.getOldFragment());
+                dao.insertFragment(h.getNewFragment());
+                dao.insertPattern(h.getPattern());
+                dao.insertChunk(commitId, h);
+            }
+        };
+    }
+
+    private void setupChunkExtractor() {
+        final Differencer<Statement> differencer = createDifferencer(config.differencer);
+        final Splitter splitter = createSplitter(config.splitter);
+        this.extractor = new ChunkExtractor(differencer, splitter);
     }
 
     private Splitter createSplitter(final SplitterType type) {
@@ -121,48 +169,5 @@ public class ExtractCommand implements Callable<Integer> {
                 assert false;
                 return null;
         }
-    }
-
-    private void process(final Path repositoryPath, final String from, final String to) {
-        final Differencer<Statement> differencer = createDifferencer(config.differencer);
-        final Splitter splitter = createSplitter(config.splitter);
-
-        try (final RepositoryAccess ra = new RepositoryAccess(repositoryPath)) {
-            log.info("Process {}", repositoryPath);
-            final long repoId = dao.insertRepository(repositoryPath.toString());
-
-            final TaskQueue<Dao> queue = new TaskQueue<>(config.nthreads);
-            for (final RevCommit c : ra.walk(from, to)) {
-                final ChunkExtractor extractor = new ChunkExtractor(differencer, splitter, ra.inherit());
-                queue.register(() -> process(c, repoId, extractor));
-            }
-            queue.consumeAll(dao);
-        }
-    }
-
-    private Consumer<Dao> process(final RevCommit c, final long repoId, final ChunkExtractor extractor) {
-        final List<Chunk> chunks = extractor.extract(c);
-        if (chunks.isEmpty()) {
-            return (dao) -> {};
-        }
-
-        // pre-computes patterns
-        for (final Chunk h : chunks) {
-            final Pattern p = h.getPattern();
-            if (log.isDebugEnabled()) {
-                log.debug("[{}@{}] {} --> {} at {}:{} in {}",
-                        p.toShortString(), c.getId().abbreviate(6).name(),
-                        h.getOldFragment(), h.getNewFragment(), h.getFile(), h.getNewBegin(), c.getId().name());
-            }
-        }
-        return (dao) -> {
-            final long commitId = dao.insertCommit(repoId, c.getId().name(), c.getFullMessage());
-            for (final Chunk h : chunks) {
-                dao.insertFragment(h.getOldFragment());
-                dao.insertFragment(h.getNewFragment());
-                dao.insertPattern(h.getPattern());
-                dao.insertChunk(commitId, h);
-            }
-        };
     }
 }
