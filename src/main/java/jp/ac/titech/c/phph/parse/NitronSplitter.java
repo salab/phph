@@ -16,14 +16,14 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
- * The statement extractor using nitron.
+ * The splitter using nitron.
  */
-public class NitronStatementExtractor implements StatementExtractor {
+public class NitronSplitter implements Splitter {
     private final NitronParser parser;
     private final AstSplitter splitter;
     private final AstProcessor<AstNode> normalizer;
 
-    public NitronStatementExtractor(LangConfig config) {
+    public NitronSplitter(LangConfig config) {
         parser = config.getParserConfig().getParser();
         final NodeTypePool types = parser.getNodeTypes();
         splitter = config.getProcessConfig().getSplitConfig().initSplitter(types);
@@ -31,7 +31,7 @@ public class NitronStatementExtractor implements StatementExtractor {
     }
 
     @Override
-    public List<Statement> extractStatements(String source) {
+    public List<Statement> split(String source) {
         final AstNode root = parser.parse(new StringReader(source));
         return splitter.process(root)
                 .stream()

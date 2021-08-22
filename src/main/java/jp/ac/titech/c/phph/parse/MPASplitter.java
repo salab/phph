@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * The statement extractor used by MPAnalyzer.
+ * The splitter used by MPAnalyzer.
  */
-public class MPAStatementExtractor implements StatementExtractor {
+public class MPASplitter implements Splitter {
     @Override
-    public List<Statement> extractStatements(String source) {
+    public List<Statement> split(String source) {
         return StringUtility.splitToStatements(source, LANGUAGE.JAVA)
                 .stream()
                 .map(s -> convert(s))

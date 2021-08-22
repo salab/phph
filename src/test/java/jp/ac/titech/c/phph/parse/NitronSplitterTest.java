@@ -10,7 +10,7 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class NitronStatementExtractorTest {
+class NitronSplitterTest {
 
     @Test
     void extractStatements_JDTParser() {
@@ -24,8 +24,8 @@ class NitronStatementExtractorTest {
                 "}\n";
 
         final var config = loadLangConfig("java-jdt");
-        final var extractor = new NitronStatementExtractor(config);
-        final var statements = extractor.extractStatements(source);
+        final var splitter = new NitronSplitter(config);
+        final var statements = splitter.split(source);
         System.out.println(statements);
 
         assertEqualsStatement(Statement.of("class Sample {", "class Sample {", 2, 3), statements.get(0));

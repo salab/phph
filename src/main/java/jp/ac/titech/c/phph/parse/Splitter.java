@@ -4,6 +4,6 @@ import jp.ac.titech.c.phph.model.Statement;
 
 import java.util.List;
 
-public interface StatementExtractor {
-    List<Statement> extractStatements(final String source);
+public interface Splitter {
+    List<Statement> split(final String source);
 }

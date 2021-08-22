@@ -19,7 +19,7 @@ public class ChunkExtractor {
     //final Differencer<Statement> differencer = JGitDifferencer.newMyers();
     final Differencer<Statement> differencer = new DynamicProgrammingDifferencer<>();
 
-    final StatementExtractor statementExtractor = new MPAStatementExtractor();
+    final Splitter splitter = new MPASplitter();
 
     final RepositoryAccess ra;
 
@@ -55,8 +55,8 @@ public class ChunkExtractor {
     protected Stream<Chunk> extractChanges(final DiffEntry entry) {
         final String oldSource = ra.readBlob(entry.getOldId().toObjectId());
         final String newSource = ra.readBlob(entry.getNewId().toObjectId());
-        final List<Statement> oldStatements = statementExtractor.extractStatements(oldSource);
-        final List<Statement> newStatements = statementExtractor.extractStatements(newSource);
+        final List<Statement> oldStatements = splitter.split(oldSource);
+        final List<Statement> newStatements = splitter.split(newSource);
         return differencer.compute(oldStatements, newStatements).stream()
                 .map(e -> Chunk.of(entry.getNewPath(), oldStatements, newStatements, e));
     }
