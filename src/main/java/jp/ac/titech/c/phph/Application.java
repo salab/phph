@@ -14,7 +14,7 @@ import picocli.CommandLine.RunAll;
 
 @Log4j2
 @Command(version = "phph", sortOptions = false,
-         subcommands = {ExtractCommand.class, MeasureCommand.class})
+         subcommands = {ExtractCommand.class, MeasureCommand.class, FindCommand.class})
 public class Application implements Callable<Integer> {
     public static class LevelConverter implements ITypeConverter<Level> {
         @Override

@@ -54,3 +54,13 @@ CREATE INDEX patterns_supportH on patterns(supportH, confidenceH);
 CREATE INDEX patterns_supportC on patterns(supportC, confidenceC);
 CREATE INDEX patterns_confidenceH on patterns(confidenceH);
 CREATE INDEX patterns_confidenceC on patterns(confidenceC);
+
+CREATE TABLE matches (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    query BLOB,
+    file TEXT,
+    begin INTEGER,
+    end INTEGER
+);
+CREATE INDEX matches_query on matches(query);
+CREATE INDEX matches_file on matches(file);

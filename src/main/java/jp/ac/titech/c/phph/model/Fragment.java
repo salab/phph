@@ -22,6 +22,10 @@ public class Fragment {
     @Getter
     Hash hash;
 
+    public static Fragment of(final String text, final Hash hash) {
+        return new Fragment(text, hash);
+    }
+
     public static Fragment of(final String text) {
         return new Fragment(text, text.isEmpty() ? Hash.ZERO : Hash.of(text));
     }
@@ -31,6 +35,10 @@ public class Fragment {
                 .map(Statement::getNormalized)
                 .collect(Collectors.joining("\n"));
         return of(text);
+    }
+
+    public Query toQuery() {
+        return new Query(this);
     }
 
     @Override
