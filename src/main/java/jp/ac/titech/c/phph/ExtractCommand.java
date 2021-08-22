@@ -40,9 +40,9 @@ public class ExtractCommand implements Callable<Integer> {
     @ParentCommand
     Application app;
 
-    public enum SplitterType { mpa, nitron }
+    public enum SplitterType {mpa, nitron}
 
-    public enum DifferencerType { dp, myers, histogram }
+    public enum DifferencerType {dp, myers, histogram}
 
     public static class Config {
         @Option(names = {"-r", "--repository"}, paramLabel = "<repo>", description = "repository path")
@@ -51,7 +51,7 @@ public class ExtractCommand implements Callable<Integer> {
         @Option(names = {"-f", "--database"}, paramLabel = "<db>", description = "database file path")
         Path database = Path.of("phph.db");
 
-        @Option(names = { "-p", "--parallel" }, paramLabel = "<nthreads>", description = "number of threads to use in parallel",
+        @Option(names = {"-p", "--parallel"}, paramLabel = "<nthreads>", description = "number of threads to use in parallel",
                 arity = "0..1", fallbackValue = "0")
         int nthreads = 1;
 
@@ -61,10 +61,10 @@ public class ExtractCommand implements Callable<Integer> {
         @Option(names = "--end", paramLabel = "<rev>", description = "Revision to start traversing (default: ${DEFAULT-VALUE})")
         String to = "HEAD";
 
-        @Option(names= "--differencer", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+        @Option(names = "--differencer", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         DifferencerType differencer = DifferencerType.dp;
 
-        @Option(names= "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+        @Option(names = "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         SplitterType splitter = SplitterType.mpa;
     }
 
