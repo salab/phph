@@ -1,6 +1,5 @@
 package jp.ac.titech.c.phph.model;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -36,7 +35,14 @@ public class Chunk {
     @Getter
     private final List<Statement> newStatements;
 
-    private transient Pattern pattern;
+    @Getter(lazy = true)
+    private final Fragment oldFragment = Fragment.of(oldStatements);
+
+    @Getter(lazy = true)
+    private final Fragment newFragment = Fragment.of(newStatements);
+
+    @Getter(lazy = true)
+    private final Pattern pattern = Pattern.of(getOldFragment(), getNewFragment());
 
     public static Chunk of(final String file, final List<Statement> oldStatements, final List<Statement> newStatements, final Edit e) {
         final List<Statement> oldSlice = oldStatements.subList(e.getBeginA(), e.getEndA());
@@ -68,12 +74,5 @@ public class Chunk {
         } else {
             return newStatements.isEmpty() ? Type.DELETE : Type.REPLACE;
         }
-    }
-
-    public Pattern getPattern() {
-        if (pattern == null) {
-            pattern = Pattern.of(oldStatements, newStatements);
-        }
-        return pattern;
     }
 }

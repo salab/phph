@@ -5,8 +5,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.List;
-
 /**
  * A normalized fragment of source code.
  */
@@ -15,51 +13,53 @@ import java.util.List;
 @EqualsAndHashCode(of = {"hash"})
 public class Pattern {
     @Getter
-    Fragment oldFragment;
+    Hash oldHash;
 
     @Getter
-    Fragment newFragment;
+    Hash newHash;
 
     @Getter
-    Fragment preContext; // NYI
+    Hash preContext; // NYI
 
     @Getter
-    Fragment postContext; // NYI
+    Hash postContext; // NYI
 
     @Getter
     Hash hash;
 
+    public static Pattern of(final Hash oldHash, final Hash newHash, final Hash preContext, final Hash postContext) {
+        return new Pattern(oldHash, newHash, preContext, postContext, digest(oldHash, newHash, preContext, postContext));
+    }
+
+    public static Pattern of(final Hash oldHash, final Hash newHash) {
+        return of(oldHash, newHash, Hash.ZERO, Hash.ZERO);
+    }
+
     public static Pattern of(final Fragment oldFragment, final Fragment newFragment, final Fragment preContext, final Fragment postContext) {
-        return new Pattern(oldFragment, newFragment, preContext, postContext, digest(oldFragment, newFragment, preContext, postContext));
+        return of(oldFragment.getHash(), newFragment.getHash(), preContext.getHash(), postContext.getHash());
     }
 
     public static Pattern of(final Fragment oldFragment, final Fragment newFragment) {
-        return of(oldFragment, newFragment, null, null);
-    }
-
-    public static Pattern of(final List<Statement> oldStatements, final List<Statement> newStatements) {
-        return of(Fragment.of(oldStatements), Fragment.of(newStatements));
+        return of(oldFragment.getHash(), newFragment.getHash(), Hash.ZERO, Hash.ZERO);
     }
 
     @Override
     public String toString() {
-        return oldFragment.toString() + " --> " + newFragment.toString();
+        return hash + ":" + oldHash + "->" + newHash;
     }
 
-    public String getSummary() {
-        return hash.abbreviate(6)
-                + ":" + oldFragment.getHash().abbreviate(6)
-                + "->" + newFragment.getHash().abbreviate(6);
+    public String toShortString() {
+        return hash.abbreviate(6) + ":" + oldHash.abbreviate(6) + "->" + newHash.abbreviate(6);
     }
 
     /**
      * Computes SHA1 from a string.
      */
-    public static Hash digest(final Fragment... fragments) {
+    public static Hash digest(final Hash... hashes) {
         return Hash.of(md -> {
-            for (final Fragment f : fragments) {
-                if (f != null) {
-                    md.update(f.getHash().getRaw());
+            for (final Hash h : hashes) {
+                if (h != null) {
+                    md.update(h.getRaw());
                 } else {
                     md.update((byte) 0);
                 }

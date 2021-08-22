@@ -17,14 +17,14 @@ public interface Dao {
     long insertCommit(final long repositoryId, final String hash, final String message);
 
     @SqlQuery("INSERT INTO chunks (commit_id, file, old_begin, old_end, new_begin, new_end, pattern) " +
-              "VALUES (:commitId, :c.file, :c.oldBegin, :c.oldEnd, :c.newBegin, :c.newEnd, :p.hash.raw) RETURNING id")
-    long insertChunk(@Bind("commitId") final long commitId, @BindBean("c") final Chunk c, @BindBean("p") final Pattern p);
+              "VALUES (:commitId, :h.file, :h.oldBegin, :h.oldEnd, :h.newBegin, :h.newEnd, :h.pattern.hash.raw) RETURNING id")
+    long insertChunk(@Bind("commitId") final long commitId, @BindBean("h") final Chunk h);
 
     @SqlUpdate("INSERT OR IGNORE INTO fragments (text, hash) " +
                "VALUES (:f.text, :f.hash.raw)")
     boolean insertFragment(@BindBean("f") final Fragment f);
 
     @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, hash) " +
-               "VALUES (:p.oldFragment.hash.raw, :p.newFragment.hash.raw, :p.hash.raw)")
+               "VALUES (:p.oldHash.raw, :p.newHash.raw, :p.hash.raw)")
     boolean insertPattern(@BindBean("p") final Pattern pattern);
 }

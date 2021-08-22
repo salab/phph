@@ -102,17 +102,18 @@ public class ExtractCommand implements Callable<Integer> {
         for (final Chunk h : chunks) {
             final Pattern p = h.getPattern();
             if (log.isDebugEnabled()) {
-                log.debug("[{}@{}] {} at {}:{} in {}", p.getSummary(), c.getId().abbreviate(6).name(), p, h.getFile(), h.getNewBegin(), c.getId().name());
+                log.debug("[{}@{}] {} --> {} at {}:{} in {}",
+                        p.toShortString(), c.getId().abbreviate(6).name(),
+                        h.getOldFragment(), h.getNewFragment(), h.getFile(), h.getNewBegin(), c.getId().name());
             }
         }
         return (dao) -> {
             final long commitId = dao.insertCommit(repoId, c.getId().name(), c.getFullMessage());
             for (final Chunk h : chunks) {
-                final Pattern p = h.getPattern();
-                dao.insertFragment(p.getOldFragment());
-                dao.insertFragment(p.getNewFragment());
-                dao.insertPattern(p);
-                dao.insertChunk(commitId, h, p);
+                dao.insertFragment(h.getOldFragment());
+                dao.insertFragment(h.getNewFragment());
+                dao.insertPattern(h.getPattern());
+                dao.insertChunk(commitId, h);
             }
         };
     }
