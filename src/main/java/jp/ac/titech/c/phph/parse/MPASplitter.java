@@ -20,7 +20,7 @@ public class MPASplitter implements Splitter {
     public List<Statement> split(String source) {
         return StringUtility.splitToStatements(source, LANGUAGE.JAVA)
                 .stream()
-                .map(s -> convert(s))
+                .map(this::convert)
                 .collect(Collectors.toList());
     }
 

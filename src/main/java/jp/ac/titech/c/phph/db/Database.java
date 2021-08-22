@@ -12,13 +12,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 @Log4j2
 public class Database {
     public static final String SCHEMA_FILENAME = "/schema.sql";
 
-    public static final String SCHEMA_PATH = Database.class.getResource(SCHEMA_FILENAME).getPath();
+    public static final String SCHEMA_PATH = Objects.requireNonNull(Database.class.getResource(SCHEMA_FILENAME)).getPath();
 
     static {
         try {

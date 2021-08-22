@@ -35,7 +35,7 @@ public class ChunkExtractor {
         final List<DiffEntry> entries = ra.getChanges(c);
         return entries.stream()
                 .filter(e -> isSupportedFileChange(e, "java"))
-                .flatMap(e -> extractChanges(e))
+                .flatMap(this::extractChanges)
                 .collect(Collectors.toList());
     }
 

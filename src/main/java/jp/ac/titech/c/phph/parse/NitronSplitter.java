@@ -23,7 +23,7 @@ public class NitronSplitter implements Splitter {
     private final AstSplitter splitter;
     private final AstProcessor<AstNode> normalizer;
 
-    public NitronSplitter(LangConfig config) {
+    public NitronSplitter(final LangConfig config) {
         parser = config.getParserConfig().getParser();
         final NodeTypePool types = parser.getNodeTypes();
         splitter = config.getProcessConfig().getSplitConfig().initSplitter(types);
@@ -31,11 +31,11 @@ public class NitronSplitter implements Splitter {
     }
 
     @Override
-    public List<Statement> split(String source) {
+    public List<Statement> split(final String source) {
         final AstNode root = parser.parse(new StringReader(source));
         return splitter.process(root)
                 .stream()
-                .map(n -> normalizeAndConvert(n))
+                .map(this::normalizeAndConvert)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }

@@ -65,7 +65,7 @@ public class JGitDifferencer<T> implements Differencer<T> {
     }
 
     public EditList compute(final List<T> left, final List<T> right) {
-        final EditList result = algorithm.diff(comparator, new ListSequence<T>(left), new ListSequence<T>(right));
+        final EditList result = algorithm.diff(comparator, new ListSequence<>(left), new ListSequence<>(right));
         DiffUtils.mergeAdjacentEdits(result);
         return result;
     }
