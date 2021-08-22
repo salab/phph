@@ -15,7 +15,7 @@ public class Statement {
     private final String normalized;
 
     /**
-     * The line number at witch this statement begins.
+     * The line number at witch this statement begins. 1-origin.
      */
     @Getter
     private final int beginLine;
