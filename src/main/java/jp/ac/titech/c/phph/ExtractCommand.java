@@ -66,6 +66,12 @@ public class ExtractCommand implements Callable<Integer> {
 
         @Option(names = "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         SplitterType splitter = SplitterType.mpa;
+
+        @Option(names = "--min-size", description = "Minimum chunk size (default: ${DEFAULT-VALUE})")
+        int minChunkSize = 0;
+
+        @Option(names = "--max-size", description = "Maximum chunk size (default: Integer.MAX_VALUE)")
+        int maxChunkSize = Integer.MAX_VALUE;
     }
 
     @Mixin
@@ -139,7 +145,7 @@ public class ExtractCommand implements Callable<Integer> {
     private void setupChunkExtractor() {
         final Differencer<Statement> differencer = createDifferencer(config.differencer);
         final Splitter splitter = createSplitter(config.splitter);
-        this.extractor = new ChunkExtractor(differencer, splitter);
+        this.extractor = new ChunkExtractor(differencer, splitter, config.minChunkSize, config.maxChunkSize);
     }
 
     private Splitter createSplitter(final SplitterType type) {

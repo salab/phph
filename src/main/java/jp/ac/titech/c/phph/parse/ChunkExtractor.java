@@ -19,9 +19,15 @@ public class ChunkExtractor {
 
     private final Splitter splitter;
 
-    public ChunkExtractor(final Differencer<Statement> differencer, final Splitter splitter) {
+    private final int minSize;
+
+    private final int maxSize;
+
+    public ChunkExtractor(final Differencer<Statement> differencer, final Splitter splitter, final int minSize, final int maxSize) {
         this.differencer = differencer;
         this.splitter = splitter;
+        this.minSize = minSize;
+        this.maxSize = maxSize;
     }
 
     /**
@@ -55,6 +61,8 @@ public class ChunkExtractor {
         final List<Statement> oldStatements = splitter.split(oldSource);
         final List<Statement> newStatements = splitter.split(newSource);
         return differencer.compute(oldStatements, newStatements).stream()
+                .filter(e -> minSize <= e.getLengthA() && e.getLengthA() <= maxSize &&
+                             minSize <= e.getLengthB() && e.getLengthB() <= maxSize)
                 .map(e -> Chunk.of(entry.getNewPath(), oldStatements, newStatements, e));
     }
 }
