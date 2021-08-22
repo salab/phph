@@ -117,9 +117,9 @@ public class ExtractCommand implements Callable<Integer> {
         for (final Chunk h : chunks) {
             final Pattern p = h.getPattern();
             if (log.isDebugEnabled()) {
-                log.debug("[{}@{}] {} --> {} at {}:{} in {}",
+                log.debug("[{}@{}] {} --> {} at {}:{}",
                         p.toShortString(), c.getId().abbreviate(6).name(),
-                        h.getOldFragment(), h.getNewFragment(), h.getFile(), h.getNewBegin(), c.getId().name());
+                        h.getOldFragment(), h.getNewFragment(), h.getFile(), h.getNewBegin());
             }
         }
         return (dao) -> {
