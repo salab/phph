@@ -2,6 +2,9 @@ package jp.ac.titech.c.phph;
 
 import java.util.concurrent.Callable;
 
+import jp.ac.titech.c.phph.cmd.ExtractCommand;
+import jp.ac.titech.c.phph.cmd.FindCommand;
+import jp.ac.titech.c.phph.cmd.MeasureCommand;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;

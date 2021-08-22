@@ -1,4 +1,4 @@
-package jp.ac.titech.c.phph;
+package jp.ac.titech.c.phph.cmd;
 
 import com.google.common.base.Stopwatch;
 import jp.ac.titech.c.phph.db.Dao;
