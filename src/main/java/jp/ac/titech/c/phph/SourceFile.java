@@ -64,7 +64,7 @@ public class SourceFile implements Comparable<SourceFile> {
     }
 
     private boolean match(final Query query, final int index) {
-        if (index + query.size() > hashes.size()) {
+        if (index + query.size() >= hashes.size()) {
             return false;
         }
         // This method assumes that the case i == 0 holds
