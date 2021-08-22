@@ -1,7 +1,6 @@
 package jp.ac.titech.c.phph.model;
 
 import com.google.common.io.BaseEncoding;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 import lombok.extern.log4j.Log4j2;
@@ -18,15 +17,21 @@ import java.util.function.Consumer;
 @Value
 @Log4j2
 public class Hash implements Comparable<Hash> {
-    public static final Hash ZERO = Hash.of(new byte[16]);
+    /**
+     * Zero Id.
+     */
+    public static final Hash ZERO = new Hash(new byte[16]);
 
     protected static final BaseEncoding BASE16L = BaseEncoding.base16().lowerCase();
 
+    /**
+     * Raw bytes of this hash.
+     */
     @Getter
     byte[] raw;
 
     public static Hash of(final byte[] raw) {
-        return new Hash(raw);
+        return Arrays.equals(raw, ZERO.raw) ? ZERO : new Hash(raw);
     }
 
     public static Hash of(final String text) {
@@ -51,14 +56,14 @@ public class Hash implements Comparable<Hash> {
     }
 
     /**
-     * Computes a hashcode from a string.
+     * Computes a hash from a string.
      */
     public static byte[] digest(final String text) {
         return digest(md -> md.update(text.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**
-     * Computes a hashcode.
+     * Computes a hash.
      */
     public static byte[] digest(final Consumer<MessageDigest> fn) {
         try {
