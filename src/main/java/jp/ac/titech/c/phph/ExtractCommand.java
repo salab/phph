@@ -1,21 +1,16 @@
 package jp.ac.titech.c.phph;
 
-import com.github.durun.nitron.core.config.LangConfig;
-import com.github.durun.nitron.core.config.NitronConfig;
-import com.github.durun.nitron.core.config.loader.NitronConfigLoader;
 import com.google.common.base.Stopwatch;
 import jp.ac.titech.c.phph.db.Database;
 import jp.ac.titech.c.phph.diff.Differencer;
-import jp.ac.titech.c.phph.diff.DynamicProgrammingDifferencer;
-import jp.ac.titech.c.phph.diff.JGitDifferencer;
+import jp.ac.titech.c.phph.diff.DifferencerFactory;
 import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.db.Dao;
 import jp.ac.titech.c.phph.model.Pattern;
 import jp.ac.titech.c.phph.model.Statement;
 import jp.ac.titech.c.phph.parse.ChunkExtractor;
-import jp.ac.titech.c.phph.parse.MPASplitter;
-import jp.ac.titech.c.phph.parse.NitronSplitter;
 import jp.ac.titech.c.phph.parse.Splitter;
+import jp.ac.titech.c.phph.parse.SplitterFactory;
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.jdbi.v3.core.Handle;
@@ -29,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -40,9 +34,6 @@ public class ExtractCommand implements Callable<Integer> {
     @ParentCommand
     Application app;
 
-    public enum SplitterType {mpa, nitron}
-
-    public enum DifferencerType {dp, myers, histogram}
 
     public static class Config {
         @Option(names = {"-r", "--repository"}, paramLabel = "<repo>", description = "repository path")
@@ -62,10 +53,10 @@ public class ExtractCommand implements Callable<Integer> {
         String to = "HEAD";
 
         @Option(names = "--differencer", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
-        DifferencerType differencer = DifferencerType.dp;
+        DifferencerFactory.Type differencer = DifferencerFactory.Type.dp;
 
         @Option(names = "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
-        SplitterType splitter = SplitterType.mpa;
+        SplitterFactory.Type splitter = SplitterFactory.Type.mpa;
 
         @Option(names = "--min-size", description = "Minimum chunk size (default: ${DEFAULT-VALUE})")
         int minChunkSize = 0;
@@ -143,37 +134,8 @@ public class ExtractCommand implements Callable<Integer> {
     }
 
     private void setupChunkExtractor() {
-        final Differencer<Statement> differencer = createDifferencer(config.differencer);
-        final Splitter splitter = createSplitter(config.splitter);
+        final Differencer<Statement> differencer = DifferencerFactory.create(config.differencer);
+        final Splitter splitter = SplitterFactory.create(config.splitter);
         this.extractor = new ChunkExtractor(differencer, splitter, config.minChunkSize, config.maxChunkSize);
-    }
-
-    private Splitter createSplitter(final SplitterType type) {
-        switch (type) {
-            case mpa:
-                return new MPASplitter();
-            case nitron:
-                final Path path = Path.of(ClassLoader.getSystemResource("nitronConfig/nitron.json").getPath());
-                final NitronConfig nitronConfig = NitronConfigLoader.INSTANCE.load(path);
-                final LangConfig langConfig = Objects.requireNonNull(nitronConfig.getLangConfig().get("java-jdt"));
-                return new NitronSplitter(langConfig);
-            default:
-                assert false;
-                return null;
-        }
-    }
-
-    private Differencer<Statement> createDifferencer(final DifferencerType type) {
-        switch (type) {
-            case dp:
-                return new DynamicProgrammingDifferencer<>();
-            case myers:
-                return JGitDifferencer.newMyers();
-            case histogram:
-                return JGitDifferencer.newHistorgram();
-            default:
-                assert false;
-                return null;
-        }
     }
 }
