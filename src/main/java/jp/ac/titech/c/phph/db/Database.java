@@ -1,5 +1,6 @@
 package jp.ac.titech.c.phph.db;
 
+import com.google.common.io.CharStreams;
 import lombok.extern.log4j.Log4j2;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
@@ -8,18 +9,17 @@ import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 @Log4j2
 public class Database {
-    public static final String SCHEMA_FILENAME = "/schema.sql";
-
-    public static final String SCHEMA_PATH = Objects.requireNonNull(Database.class.getResource(SCHEMA_FILENAME)).getPath();
+    public static final String SCHEMA_RESOURCE = "/schema.sql";
 
     static {
         try {
@@ -39,8 +39,8 @@ public class Database {
     }
 
     public static void initializeDatabase(final Handle h) throws IOException {
-        final String schema = Files.readString(Paths.get(SCHEMA_PATH));
-        Stream.of(schema.split(";"))
+        final InputStream in = Objects.requireNonNull(Database.class.getResourceAsStream(SCHEMA_RESOURCE));
+        Stream.of(CharStreams.toString(new InputStreamReader(in, StandardCharsets.UTF_8)).split(";"))
                 .map(s -> s.trim().replaceAll("\\n\\s*", " "))
                 .filter(s -> !s.isEmpty())
                 .forEach(h::execute);
