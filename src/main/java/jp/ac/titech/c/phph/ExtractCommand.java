@@ -5,9 +5,13 @@ import com.github.durun.nitron.core.config.NitronConfig;
 import com.github.durun.nitron.core.config.loader.NitronConfigLoader;
 import com.google.common.base.Stopwatch;
 import jp.ac.titech.c.phph.db.Database;
+import jp.ac.titech.c.phph.diff.Differencer;
+import jp.ac.titech.c.phph.diff.DynamicProgrammingDifferencer;
+import jp.ac.titech.c.phph.diff.JGitDifferencer;
 import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.db.Dao;
 import jp.ac.titech.c.phph.model.Pattern;
+import jp.ac.titech.c.phph.model.Statement;
 import jp.ac.titech.c.phph.parse.ChunkExtractor;
 import jp.ac.titech.c.phph.parse.MPASplitter;
 import jp.ac.titech.c.phph.parse.NitronSplitter;
@@ -38,6 +42,8 @@ public class ExtractCommand implements Callable<Integer> {
 
     public enum SplitterType { mpa, nitron }
 
+    public enum DifferencerType { dp, myers, histogram }
+
     public static class Config {
         @Option(names = {"-r", "--repository"}, paramLabel = "<repo>", description = "repository path")
         Path repository = Path.of(".git");
@@ -55,14 +61,15 @@ public class ExtractCommand implements Callable<Integer> {
         @Option(names = "--end", paramLabel = "<rev>", description = "Revision to start traversing (default: ${DEFAULT-VALUE})")
         String to = "HEAD";
 
+        @Option(names= "--differencer", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+        DifferencerType differencer = DifferencerType.dp;
+
         @Option(names= "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         SplitterType splitter = SplitterType.mpa;
     }
 
     @Mixin
     Config config = new Config();
-
-    Splitter splitter;
 
     Handle handle;
 
@@ -72,8 +79,6 @@ public class ExtractCommand implements Callable<Integer> {
     public Integer call() {
         final Stopwatch w = Stopwatch.createStarted();
         try {
-            this.splitter = createSplitter(config.splitter);
-
             Files.deleteIfExists(config.database);
             final Jdbi jdbi = Database.openDatabase(config.database);
             try (final Handle h = this.handle = jdbi.open()) {
@@ -104,14 +109,31 @@ public class ExtractCommand implements Callable<Integer> {
         }
     }
 
+    private Differencer<Statement> createDifferencer(final DifferencerType type) {
+        switch (type) {
+            case dp:
+                return new DynamicProgrammingDifferencer<>();
+            case myers:
+                return JGitDifferencer.newMyers();
+            case histogram:
+                return JGitDifferencer.newHistorgram();
+            default:
+                assert false;
+                return null;
+        }
+    }
+
     private void process(final Path repositoryPath, final String from, final String to) {
+        final Differencer<Statement> differencer = createDifferencer(config.differencer);
+        final Splitter splitter = createSplitter(config.splitter);
+
         try (final RepositoryAccess ra = new RepositoryAccess(repositoryPath)) {
             log.info("Process {}", repositoryPath);
             final long repoId = dao.insertRepository(repositoryPath.toString());
 
             final TaskQueue<Dao> queue = new TaskQueue<>(config.nthreads);
             for (final RevCommit c : ra.walk(from, to)) {
-                final ChunkExtractor extractor = new ChunkExtractor(splitter, ra.inherit());
+                final ChunkExtractor extractor = new ChunkExtractor(differencer, splitter, ra.inherit());
                 queue.register(() -> process(c, repoId, extractor));
             }
             queue.consumeAll(dao);

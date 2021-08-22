@@ -2,7 +2,6 @@ package jp.ac.titech.c.phph.parse;
 
 import jp.ac.titech.c.phph.RepositoryAccess;
 import jp.ac.titech.c.phph.diff.Differencer;
-import jp.ac.titech.c.phph.diff.DynamicProgrammingDifferencer;
 import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.model.Statement;
 import lombok.extern.log4j.Log4j2;
@@ -16,14 +15,14 @@ import java.util.stream.Stream;
 
 @Log4j2
 public class ChunkExtractor {
-    //final Differencer<Statement> differencer = JGitDifferencer.newMyers();
-    final Differencer<Statement> differencer = new DynamicProgrammingDifferencer<>();
+    private final Differencer<Statement> differencer;
 
-    final Splitter splitter;
+    private final Splitter splitter;
 
-    final RepositoryAccess ra;
+    private final RepositoryAccess ra;
 
-    public ChunkExtractor(final Splitter splitter, final RepositoryAccess ra) {
+    public ChunkExtractor(final Differencer<Statement> differncer, final Splitter splitter, final RepositoryAccess ra) {
+        this.differencer = differncer;
         this.splitter = splitter;
         this.ra = ra;
     }
