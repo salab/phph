@@ -13,13 +13,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @ToString(of = {"file", "oldBegin", "oldEnd", "newBegin", "newEnd"})
 public class Chunk {
-    public enum Type {
-        REPLACE,
-        ADD,
-        DELETE,
-        EMPTY
-    }
-
     @Getter
     private final String file;
 
@@ -68,11 +61,11 @@ public class Chunk {
         return new Chunk(file, oldBegin, oldEnd, oldSlice, newBegin, newEnd, newSlice);
     }
 
-    public Type getType() {
+    public ChangeType getType() {
         if (oldStatements.isEmpty()) {
-            return newStatements.isEmpty() ? Type.EMPTY : Type.ADD;
+            return newStatements.isEmpty() ? ChangeType.EMPTY : ChangeType.ADD;
         } else {
-            return newStatements.isEmpty() ? Type.DELETE : Type.REPLACE;
+            return newStatements.isEmpty() ? ChangeType.DELETE : ChangeType.MODIFY;
         }
     }
 }

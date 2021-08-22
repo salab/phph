@@ -40,7 +40,8 @@ CREATE TABLE patterns (
     new TEXT,
     /* pre TEXT, */
     /* post TEXT, */
-    hash BLOB UNIQUE
+    hash BLOB UNIQUE,
+    type INTEGER
     /* , UNIQUE (old, new, pre, post) */
 );
 CREATE INDEX patterns_old_hash on patterns(old);

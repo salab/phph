@@ -1,7 +1,9 @@
 package jp.ac.titech.c.phph.model;
 
 import com.google.common.io.BaseEncoding;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.extern.log4j.Log4j2;
 
@@ -15,6 +17,7 @@ import java.util.function.Consumer;
  * A hash code.
  */
 @Value
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Log4j2
 public class Hash implements Comparable<Hash> {
     /**
@@ -79,5 +82,9 @@ public class Hash implements Comparable<Hash> {
     @Override
     public int compareTo(final Hash other) {
         return Arrays.compare(raw, other.raw);
+    }
+
+    public boolean isZero() {
+        return this == ZERO;
     }
 }

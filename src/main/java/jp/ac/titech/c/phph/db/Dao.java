@@ -24,7 +24,7 @@ public interface Dao {
                "VALUES (:f.text, :f.hash.raw)")
     boolean insertFragment(@BindBean("f") final Fragment f);
 
-    @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, hash) " +
-               "VALUES (:p.oldHash.raw, :p.newHash.raw, :p.hash.raw)")
+    @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, hash, type) " +
+               "VALUES (:p.oldHash.raw, :p.newHash.raw, :p.hash.raw, :p.type.id)")
     boolean insertPattern(@BindBean("p") final Pattern pattern);
 }

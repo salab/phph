@@ -45,11 +45,11 @@ public class Pattern {
 
     @Override
     public String toString() {
-        return hash + ":" + oldHash + "->" + newHash;
+        return hash + ":" + getType().name() + "|" + oldHash + "->" + newHash;
     }
 
     public String toShortString() {
-        return hash.abbreviate(6) + ":" + oldHash.abbreviate(6) + "->" + newHash.abbreviate(6);
+        return hash.abbreviate(6) + ":" + getType().name().charAt(0) + "|" + oldHash.abbreviate(6) + "->" + newHash.abbreviate(6);
     }
 
     /**
@@ -65,5 +65,13 @@ public class Pattern {
                 }
             }
         });
+    }
+
+    public ChangeType getType() {
+        if (oldHash.isZero()) {
+            return newHash.isZero() ? ChangeType.EMPTY : ChangeType.ADD;
+        } else {
+            return newHash.isZero() ? ChangeType.DELETE : ChangeType.MODIFY;
+        }
     }
 }
