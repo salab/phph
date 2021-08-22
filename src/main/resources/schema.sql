@@ -24,12 +24,12 @@ CREATE TABLE chunks (
     new_end INTEGER,
     pattern_hash BLOB
 );
+CREATE INDEX chunks_pattern_hash on chunks(pattern_hash);
 
 CREATE TABLE fragments (
     /* id INTEGER PRIMARY KEY AUTOINCREMENT, */
-    text TEXT,
+    text TEXT UNIQUE,
     hash BLOB UNIQUE
-    /* , UNIQUE (text) */
 );
 CREATE INDEX fragments_hash on fragments(hash);
 
@@ -37,16 +37,20 @@ CREATE TABLE patterns (
     /* id INTEGER PRIMARY KEY AUTOINCREMENT, */
     old BLOB,
     new BLOB,
-    /* pre TEXT, */
-    /* post TEXT, */
+    /* pre BLOB, */
+    /* post BLOB, */
     hash BLOB UNIQUE,
     type INTEGER,
     supportH INTEGER,
     supportC INTEGER,
     confidenceH REAL,
-    confidenceC REAL
-    /* , UNIQUE (old, new, pre, post) */
+    confidenceC REAL,
+    UNIQUE (old, new)
 );
 CREATE INDEX patterns_old_hash on patterns(old);
 CREATE INDEX patterns_new_hash on patterns(new);
 CREATE INDEX patterns_hash on patterns(hash);
+CREATE INDEX patterns_supportH on patterns(supportH, confidenceH);
+CREATE INDEX patterns_supportC on patterns(supportC, confidenceC);
+CREATE INDEX patterns_confidenceH on patterns(confidenceH);
+CREATE INDEX patterns_confidenceC on patterns(confidenceC);
