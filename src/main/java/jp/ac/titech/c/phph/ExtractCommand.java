@@ -1,11 +1,17 @@
 package jp.ac.titech.c.phph;
 
+import com.github.durun.nitron.core.config.LangConfig;
+import com.github.durun.nitron.core.config.NitronConfig;
+import com.github.durun.nitron.core.config.loader.NitronConfigLoader;
 import com.google.common.base.Stopwatch;
 import jp.ac.titech.c.phph.db.Database;
 import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.db.Dao;
 import jp.ac.titech.c.phph.model.Pattern;
 import jp.ac.titech.c.phph.parse.ChunkExtractor;
+import jp.ac.titech.c.phph.parse.MPASplitter;
+import jp.ac.titech.c.phph.parse.NitronSplitter;
+import jp.ac.titech.c.phph.parse.Splitter;
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.jdbi.v3.core.Handle;
@@ -14,12 +20,12 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.ParentCommand;
-import yoshikihigo.cpanalyzer.CPAConfig;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -29,6 +35,8 @@ import java.util.function.Consumer;
 public class ExtractCommand implements Callable<Integer> {
     @ParentCommand
     Application app;
+
+    public enum SplitterType { mpa, nitron }
 
     public static class Config {
         @Option(names = {"-r", "--repository"}, paramLabel = "<repo>", description = "repository path")
@@ -46,23 +54,26 @@ public class ExtractCommand implements Callable<Integer> {
 
         @Option(names = "--end", paramLabel = "<rev>", description = "Revision to start traversing (default: ${DEFAULT-VALUE})")
         String to = "HEAD";
+
+        @Option(names= "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+        SplitterType splitter = SplitterType.mpa;
     }
 
     @Mixin
     Config config = new Config();
 
+    Splitter splitter;
+
     Handle handle;
 
     Dao dao;
-
-    static {
-        CPAConfig.initialize(new String[] {"-n", "-cs", "10"});
-    }
 
     @Override
     public Integer call() {
         final Stopwatch w = Stopwatch.createStarted();
         try {
+            this.splitter = createSplitter(config.splitter);
+
             Files.deleteIfExists(config.database);
             final Jdbi jdbi = Database.openDatabase(config.database);
             try (final Handle h = this.handle = jdbi.open()) {
@@ -78,6 +89,21 @@ public class ExtractCommand implements Callable<Integer> {
         return 0;
     }
 
+    private Splitter createSplitter(final SplitterType type) {
+        switch (type) {
+            case mpa:
+                return new MPASplitter();
+            case nitron:
+                final Path path = Path.of(ClassLoader.getSystemResource("nitronConfig/nitron.json").getPath());
+                final NitronConfig nitronConfig = NitronConfigLoader.INSTANCE.load(path);
+                final LangConfig langConfig = Objects.requireNonNull(nitronConfig.getLangConfig().get("java-jdt"));
+                return new NitronSplitter(langConfig);
+            default:
+                assert false;
+                return null;
+        }
+    }
+
     private void process(final Path repositoryPath, final String from, final String to) {
         try (final RepositoryAccess ra = new RepositoryAccess(repositoryPath)) {
             log.info("Process {}", repositoryPath);
@@ -85,7 +111,7 @@ public class ExtractCommand implements Callable<Integer> {
 
             final TaskQueue<Dao> queue = new TaskQueue<>(config.nthreads);
             for (final RevCommit c : ra.walk(from, to)) {
-                final ChunkExtractor extractor = new ChunkExtractor(ra.inherit());
+                final ChunkExtractor extractor = new ChunkExtractor(splitter, ra.inherit());
                 queue.register(() -> process(c, repoId, extractor));
             }
             queue.consumeAll(dao);

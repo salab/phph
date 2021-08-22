@@ -19,11 +19,12 @@ public class ChunkExtractor {
     //final Differencer<Statement> differencer = JGitDifferencer.newMyers();
     final Differencer<Statement> differencer = new DynamicProgrammingDifferencer<>();
 
-    final Splitter splitter = new MPASplitter();
+    final Splitter splitter;
 
     final RepositoryAccess ra;
 
-    public ChunkExtractor(final RepositoryAccess ra) {
+    public ChunkExtractor(final Splitter splitter, final RepositoryAccess ra) {
+        this.splitter = splitter;
         this.ra = ra;
     }
 
