@@ -13,28 +13,31 @@ import java.util.stream.Collectors;
  * A normalized fragment of source code.
  */
 @Value
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = "hash")
 public class Fragment {
+    public static final Fragment EMPTY = new Fragment("", Hash.ZERO);
+
     @Getter
     String text;
 
     @Getter
     Hash hash;
 
+    protected Fragment(final String text) {
+        this(text, Hash.of(text));
+    }
+
     public static Fragment of(final String text, final Hash hash) {
-        return new Fragment(text, hash);
+        return text.isEmpty() ? EMPTY : new Fragment(text, hash);
     }
 
     public static Fragment of(final String text) {
-        return new Fragment(text, text.isEmpty() ? Hash.ZERO : Hash.of(text));
+        return text.isEmpty() ? EMPTY : new Fragment(text);
     }
 
     public static Fragment of(final List<Statement> statements) {
-        final String text = statements.stream()
-                .map(Statement::getNormalized)
-                .collect(Collectors.joining("\n"));
-        return of(text);
+        return statements.isEmpty() ? EMPTY : new Fragment(join(statements));
     }
 
     public Query toQuery() {
@@ -44,5 +47,11 @@ public class Fragment {
     @Override
     public String toString() {
         return text.isEmpty() ? "``" : "`" + text.replace("\n", " ") + "`";
+    }
+
+    public static String join(final List<Statement> statements) {
+        return statements.stream()
+                .map(Statement::getNormalized)
+                .collect(Collectors.joining("\n"));
     }
 }
