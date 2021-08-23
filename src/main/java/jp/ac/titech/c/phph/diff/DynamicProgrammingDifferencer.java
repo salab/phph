@@ -46,6 +46,7 @@ public class DynamicProgrammingDifferencer<T> implements Differencer<T> {
         }
 
         Collections.reverse(result);
+        DiffUtils.mergeAdjacentEdits(result); // TODO: really necessary?
         return result;
     }
 
