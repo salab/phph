@@ -16,7 +16,6 @@ import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
 public interface Dao {
 
@@ -35,7 +34,7 @@ public interface Dao {
 
     // -------
 
-    @SqlUpdate("INSERT OR IGNORE INTO fragments (text, hash) VALUES (:f.text, :f.hash.raw)")
+    @SqlUpdate("INSERT OR IGNORE INTO fragments (text, pre_size, post_size, hash) VALUES (:f.text, :f.preSize, :f.postSize, :f.hash.raw)")
     void insertFragment(@BindBean("f") final Fragment f);
 
     @SqlQuery("SELECT * FROM fragments")
@@ -44,19 +43,22 @@ public interface Dao {
 
     @SqlQuery("SELECT * FROM fragments WHERE hash = :h.raw LIMIT 1")
     @RegisterRowMapper(FragmentRowMapper.class)
-    Fragment findFragment(@BindBean("h") final Hash hash);
+    Fragment findFragment(@BindBean("h") final Hash h);
 
     class FragmentRowMapper implements RowMapper<Fragment> {
         @Override
         public Fragment map(final ResultSet rs, final StatementContext ctx) throws SQLException {
-            return Fragment.of(rs.getString("text"), Hash.of(rs.getBytes("hash")));
+            return Fragment.of(rs.getString("text"),
+                               rs.getInt("pre_size"),
+                               rs.getInt("post_size"),
+                               Hash.of(rs.getBytes("hash")));
         }
     }
 
     // -------
 
     @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, hash, type) VALUES (:p.oldHash.raw, :p.newHash.raw, :p.hash.raw, :p.type.id)")
-    void insertPattern(@BindBean("p") final Pattern pattern);
+    void insertPattern(@BindBean("p") final Pattern p);
 
     @SqlUpdate("UPDATE patterns AS p SET supportH = (SELECT count(*) FROM chunks AS h WHERE h.pattern_hash = p.hash)")
     void computeSupportH();
@@ -100,7 +102,7 @@ public interface Dao {
     // -------
 
     @SqlQuery("INSERT INTO matches (query, file, begin, end) VALUES (:m.query.raw, :m.file, :m.beginLine, :m.endLine) RETURNING id")
-    long insertMatch(@BindBean("m") final Match match);
+    long insertMatch(@BindBean("m") final Match m);
 
     @SqlUpdate("DELETE FROM matches")
     void clearMatches();

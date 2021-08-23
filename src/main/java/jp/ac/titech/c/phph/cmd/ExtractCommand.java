@@ -66,6 +66,9 @@ public class ExtractCommand implements Callable<Integer> {
 
         @Option(names = "--max-size", description = "Maximum chunk size (default: Integer.MAX_VALUE)")
         int maxChunkSize = Integer.MAX_VALUE;
+
+        @Option(names = "--context-size", description = "Context size (default: ${DEFAULT-VALUE})")
+        int contextSize = 0;
     }
 
     @Mixin
@@ -139,6 +142,6 @@ public class ExtractCommand implements Callable<Integer> {
     private void setupChunkExtractor() {
         final Differencer<Statement> differencer = DifferencerFactory.create(config.differencer);
         final Splitter splitter = SplitterFactory.create(config.splitter);
-        this.extractor = new ChunkExtractor(differencer, splitter, config.minChunkSize, config.maxChunkSize);
+        this.extractor = new ChunkExtractor(differencer, splitter, config.minChunkSize, config.maxChunkSize, config.contextSize);
     }
 }

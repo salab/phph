@@ -19,36 +19,18 @@ public class Pattern {
     Hash newHash;
 
     @Getter
-    Hash preContext; // NYI
-
-    @Getter
-    Hash postContext; // NYI
-
-    @Getter
     Hash hash;
 
-    public static Pattern of(final Hash oldHash, final Hash newHash, final Hash preContext, final Hash postContext, final Hash hash) {
-        return new Pattern(oldHash, newHash, preContext, postContext, hash);
-    }
-
     public static Pattern of(final Hash oldHash, final Hash newHash, final Hash hash) {
-        return new Pattern(oldHash, newHash, Hash.ZERO, Hash.ZERO, hash);
-    }
-
-    public static Pattern of(final Hash oldHash, final Hash newHash, final Hash preContext, final Hash postContext) {
-        return new Pattern(oldHash, newHash, preContext, postContext, digest(oldHash, newHash, preContext, postContext));
+        return new Pattern(oldHash, newHash, hash);
     }
 
     public static Pattern of(final Hash oldHash, final Hash newHash) {
-        return of(oldHash, newHash, Hash.ZERO, Hash.ZERO);
-    }
-
-    public static Pattern of(final Fragment oldFragment, final Fragment newFragment, final Fragment preContext, final Fragment postContext) {
-        return of(oldFragment.getHash(), newFragment.getHash(), preContext.getHash(), postContext.getHash());
+        return new Pattern(oldHash, newHash, digest(oldHash, newHash));
     }
 
     public static Pattern of(final Fragment oldFragment, final Fragment newFragment) {
-        return of(oldFragment.getHash(), newFragment.getHash(), Hash.ZERO, Hash.ZERO);
+        return of(oldFragment.getHash(), newFragment.getHash());
     }
 
     @Override

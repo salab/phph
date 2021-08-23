@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,28 +17,34 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = "hash")
 public class Fragment {
-    public static final Fragment EMPTY = new Fragment("", Hash.ZERO);
+    public static final Fragment EMPTY = new Fragment("", 0, 0, Hash.ZERO);
 
     @Getter
     String text;
 
     @Getter
+    int preSize;
+
+    @Getter
+    int postSize;
+
+    @Getter
     Hash hash;
 
-    protected Fragment(final String text) {
-        this(text, Hash.of(text));
+    protected Fragment(final String text, final int preSize, final int postSize) {
+        this(text, preSize, postSize, digest(text, preSize, postSize));
     }
 
-    public static Fragment of(final String text, final Hash hash) {
-        return text.isEmpty() ? EMPTY : new Fragment(text, hash);
+    public static Fragment of(final String text, final int preSize, final int postSize, final Hash hash) {
+        return text.isEmpty() ? EMPTY : new Fragment(text, preSize, postSize, hash);
     }
 
-    public static Fragment of(final String text) {
-        return text.isEmpty() ? EMPTY : new Fragment(text);
+    public static Fragment of(final String text, final int preSize, final int postSize) {
+        return text.isEmpty() ? EMPTY : new Fragment(text, preSize, postSize);
     }
 
-    public static Fragment of(final List<Statement> statements) {
-        return statements.isEmpty() ? EMPTY : new Fragment(join(statements));
+    public static Fragment of(final List<Statement> statements, final int preSize, final int postSize) {
+        return statements.isEmpty() ? EMPTY : new Fragment(join(statements), preSize, postSize);
     }
 
     public Query toQuery() {
@@ -53,5 +60,20 @@ public class Fragment {
         return statements.stream()
                 .map(Statement::getNormalized)
                 .collect(Collectors.joining("\n"));
+    }
+
+    /**
+     * Computes a hash for a fragment.
+     */
+    public static Hash digest(final String text, final int preSize, final int postSize) {
+        return Hash.of(md -> {
+            md.update(text.getBytes(StandardCharsets.UTF_8));
+            if (preSize != 0 || postSize != 0) {
+                // Only when contexts are available;
+                // then, the resulting hash becomes the same as that of the text in case of no contest.
+                md.update((byte) preSize);
+                md.update((byte) postSize);
+            }
+        });
     }
 }
