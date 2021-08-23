@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = "hash")
 public class Fragment {
-    public static final Fragment EMPTY = new Fragment("", 0, 0, Hash.ZERO);
+    public static final Fragment EMPTY = new Fragment("", 0, 0,0, Hash.ZERO);
 
     @Getter
     String text;
@@ -26,25 +26,28 @@ public class Fragment {
     int preSize;
 
     @Getter
+    int size;
+
+    @Getter
     int postSize;
 
     @Getter
     Hash hash;
 
-    protected Fragment(final String text, final int preSize, final int postSize) {
-        this(text, preSize, postSize, digest(text, preSize, postSize));
+    protected Fragment(final String text, final int preSize, final int size, final int postSize) {
+        this(text, preSize, size, postSize, digest(text, preSize, postSize));
     }
 
-    public static Fragment of(final String text, final int preSize, final int postSize, final Hash hash) {
-        return text.isEmpty() ? EMPTY : new Fragment(text, preSize, postSize, hash);
+    public static Fragment of(final String text, final int preSize, final int size, final int postSize, final Hash hash) {
+        return text.isEmpty() ? EMPTY : new Fragment(text, preSize, size, postSize, hash);
     }
 
-    public static Fragment of(final String text, final int preSize, final int postSize) {
-        return text.isEmpty() ? EMPTY : new Fragment(text, preSize, postSize);
+    public static Fragment of(final String text, final int preSize, final int size, final int postSize) {
+        return text.isEmpty() ? EMPTY : new Fragment(text, preSize, size, postSize);
     }
 
     public static Fragment of(final List<Statement> statements, final int preSize, final int postSize) {
-        return statements.isEmpty() ? EMPTY : new Fragment(join(statements), preSize, postSize);
+        return statements.isEmpty() ? EMPTY : new Fragment(join(statements), preSize, statements.size() - preSize - postSize, postSize);
     }
 
     public Query toQuery() {
@@ -54,6 +57,10 @@ public class Fragment {
     @Override
     public String toString() {
         return text.isEmpty() ? "``" : "`" + text.replace("\n", " ") + "`";
+    }
+
+    public boolean isEmpty() {
+        return size == 0;
     }
 
     public static String join(final List<Statement> statements) {

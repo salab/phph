@@ -1,5 +1,6 @@
 package jp.ac.titech.c.phph.db;
 
+import jp.ac.titech.c.phph.model.ChangeType;
 import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.model.Fragment;
 import jp.ac.titech.c.phph.model.Hash;
@@ -34,7 +35,7 @@ public interface Dao {
 
     // -------
 
-    @SqlUpdate("INSERT OR IGNORE INTO fragments (text, pre_size, post_size, hash) VALUES (:f.text, :f.preSize, :f.postSize, :f.hash.raw)")
+    @SqlUpdate("INSERT OR IGNORE INTO fragments (text, pre_size, size, post_size, hash) VALUES (:f.text, :f.preSize, :f.size, :f.postSize, :f.hash.raw)")
     void insertFragment(@BindBean("f") final Fragment f);
 
     @SqlQuery("SELECT * FROM fragments")
@@ -50,6 +51,7 @@ public interface Dao {
         public Fragment map(final ResultSet rs, final StatementContext ctx) throws SQLException {
             return Fragment.of(rs.getString("text"),
                                rs.getInt("pre_size"),
+                               rs.getInt("size"),
                                rs.getInt("post_size"),
                                Hash.of(rs.getBytes("hash")));
         }
@@ -57,7 +59,7 @@ public interface Dao {
 
     // -------
 
-    @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, hash, type) VALUES (:p.oldHash.raw, :p.newHash.raw, :p.hash.raw, :p.type.id)")
+    @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, type, hash) VALUES (:p.oldHash.raw, :p.newHash.raw, :p.type.id, :p.hash.raw)")
     void insertPattern(@BindBean("p") final Pattern p);
 
     @SqlUpdate("UPDATE patterns AS p SET supportH = (SELECT count(*) FROM chunks AS h WHERE h.pattern_hash = p.hash)")
@@ -94,8 +96,9 @@ public interface Dao {
         @Override
         public Pattern map(final ResultSet rs, final StatementContext ctx) throws SQLException {
             return Pattern.of(Hash.of(rs.getBytes("old")),
-                    Hash.of(rs.getBytes("new")),
-                    Hash.of(rs.getBytes("hash")));
+                              Hash.of(rs.getBytes("new")),
+                              ChangeType.values()[rs.getInt("type")],
+                              Hash.of(rs.getBytes("hash")));
         }
     }
 

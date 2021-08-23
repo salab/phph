@@ -19,18 +19,21 @@ public class Pattern {
     Hash newHash;
 
     @Getter
+    ChangeType type;
+
+    @Getter
     Hash hash;
 
-    public static Pattern of(final Hash oldHash, final Hash newHash, final Hash hash) {
-        return new Pattern(oldHash, newHash, hash);
+    public static Pattern of(final Hash oldHash, final Hash newHash, final ChangeType type, final Hash hash) {
+        return new Pattern(oldHash, newHash, type, hash);
     }
 
-    public static Pattern of(final Hash oldHash, final Hash newHash) {
-        return new Pattern(oldHash, newHash, digest(oldHash, newHash));
+    public static Pattern of(final Hash oldHash, final Hash newHash, final ChangeType type) {
+        return new Pattern(oldHash, newHash, type, digest(oldHash, newHash));
     }
 
     public static Pattern of(final Fragment oldFragment, final Fragment newFragment) {
-        return of(oldFragment.getHash(), newFragment.getHash());
+        return of(oldFragment.getHash(), newFragment.getHash(), computeType(oldFragment, newFragment));
     }
 
     @Override
@@ -45,23 +48,18 @@ public class Pattern {
     /**
      * Computes SHA1 from a string.
      */
-    public static Hash digest(final Hash... hashes) {
+    public static Hash digest(final Hash oldHash, final Hash newHash) {
         return Hash.of(md -> {
-            for (final Hash h : hashes) {
-                if (h != null) {
-                    md.update(h.getRaw());
-                } else {
-                    md.update((byte) 0);
-                }
-            }
+            md.update(oldHash.getRaw());
+            md.update(newHash.getRaw());
         });
     }
 
-    public ChangeType getType() {
-        if (oldHash.isZero()) {
-            return newHash.isZero() ? ChangeType.EMPTY : ChangeType.ADD;
+    public static ChangeType computeType(final Fragment oldFragment, final Fragment newFragment) {
+        if (oldFragment.isEmpty()) {
+            return newFragment.isEmpty() ? ChangeType.EMPTY : ChangeType.ADD;
         } else {
-            return newHash.isZero() ? ChangeType.DELETE : ChangeType.MODIFY;
+            return newFragment.isEmpty() ? ChangeType.DELETE : ChangeType.MODIFY;
         }
     }
 }

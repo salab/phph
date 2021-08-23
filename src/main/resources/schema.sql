@@ -30,6 +30,7 @@ CREATE TABLE fragments (
     /* id INTEGER PRIMARY KEY AUTOINCREMENT, */
     text TEXT UNIQUE,
     pre_size INTEGER,
+    size INTEGER,
     post_size INTEGER,
     hash BLOB UNIQUE
 );
@@ -39,8 +40,8 @@ CREATE TABLE patterns (
     /* id INTEGER PRIMARY KEY AUTOINCREMENT, */
     old BLOB,
     new BLOB,
-    hash BLOB UNIQUE,
     type INTEGER,
+    hash BLOB UNIQUE,
     supportH INTEGER,
     supportC INTEGER,
     confidenceH REAL,
