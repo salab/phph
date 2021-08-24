@@ -30,33 +30,33 @@ public interface Dao {
 
     // -------
 
-    @SqlQuery("INSERT INTO chunks (commit_id, file, old_begin, old_end, new_begin, new_end, pattern_hash) VALUES (:commitId, :h.file, :h.oldBegin, :h.oldEnd, :h.newBegin, :h.newEnd, :h.pattern.hash.raw) RETURNING id")
+    @SqlQuery("INSERT INTO chunks (commit_id, file, old_begin, old_end, new_begin, new_end, pattern_hash) VALUES (:commitId, :h.file, :h.oldBegin, :h.oldEnd, :h.newBegin, :h.newEnd, :h.pattern.hash.name) RETURNING id")
     long insertChunk(@Bind("commitId") final long commitId, @BindBean("h") final Chunk h);
 
     // -------
 
-    @SqlUpdate("INSERT OR IGNORE INTO fragments (text, hash) VALUES (:f.text, :f.hash.raw)")
+    @SqlUpdate("INSERT OR IGNORE INTO fragments (text, hash) VALUES (:f.text, :f.hash.name)")
     void insertFragment(@BindBean("f") final Fragment f);
 
     @SqlQuery("SELECT * FROM fragments")
     @RegisterRowMapper(FragmentRowMapper.class)
     ResultIterable<Fragment> listFragments();
 
-    @SqlQuery("SELECT * FROM fragments WHERE hash = :h.raw LIMIT 1")
+    @SqlQuery("SELECT * FROM fragments WHERE hash = :h.name LIMIT 1")
     @RegisterRowMapper(FragmentRowMapper.class)
     Fragment findFragment(@BindBean("h") final Hash hash);
 
     class FragmentRowMapper implements RowMapper<Fragment> {
         @Override
         public Fragment map(final ResultSet rs, final StatementContext ctx) throws SQLException {
-            return Fragment.of(rs.getString("text"), Hash.of(rs.getBytes("hash")));
+            return Fragment.of(rs.getString("text"), Hash.parse(rs.getString("hash")));
         }
     }
 
     // -------
 
-    @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, hash, type) VALUES (:p.oldHash.raw, :p.newHash.raw, :p.hash.raw, :p.type.id)")
-    void insertPattern(@BindBean("p") final Pattern pattern);
+    @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, type, hash) VALUES (:p.oldHash.name, :p.newHash.name, :p.type.id, :p.hash.name)")
+    void insertPattern(@BindBean("p") final Pattern p);
 
     @SqlUpdate("UPDATE patterns AS p SET supportH = (SELECT count(*) FROM chunks AS h WHERE h.pattern_hash = p.hash)")
     void computeSupportH();
@@ -91,9 +91,9 @@ public interface Dao {
     class PatternRowMapper implements RowMapper<Pattern> {
         @Override
         public Pattern map(final ResultSet rs, final StatementContext ctx) throws SQLException {
-            return Pattern.of(Hash.of(rs.getBytes("old")),
-                    Hash.of(rs.getBytes("new")),
-                    Hash.of(rs.getBytes("hash")));
+            return Pattern.of(Hash.parse(rs.getString("old")),
+                              Hash.parse(rs.getString("new")),
+                              Hash.parse(rs.getString("hash")));
         }
     }
 

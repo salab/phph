@@ -45,6 +45,10 @@ public class Hash implements Comparable<Hash> {
         return new Hash(digest(fn));
     }
 
+    public static Hash parse(final String name) {
+        return Hash.of(BASE16L.decode(name));
+    }
+
     @Override
     public String toString() {
         return getName();
