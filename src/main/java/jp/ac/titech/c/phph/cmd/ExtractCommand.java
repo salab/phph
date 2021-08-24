@@ -1,10 +1,7 @@
 package jp.ac.titech.c.phph.cmd;
 
-import com.google.common.base.Stopwatch;
-import jp.ac.titech.c.phph.Application;
 import jp.ac.titech.c.phph.util.RepositoryAccess;
 import jp.ac.titech.c.phph.util.TaskQueue;
-import jp.ac.titech.c.phph.db.Database;
 import jp.ac.titech.c.phph.diff.Differencer;
 import jp.ac.titech.c.phph.diff.DifferencerFactory;
 import jp.ac.titech.c.phph.model.Chunk;
@@ -16,34 +13,21 @@ import jp.ac.titech.c.phph.parse.Splitter;
 import jp.ac.titech.c.phph.parse.SplitterFactory;
 import lombok.extern.log4j.Log4j2;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.jdbi.v3.core.Handle;
-import org.jdbi.v3.core.Jdbi;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.ParentCommand;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Log4j2
 @Command(name = "extract", description = "Extract commits from a repository")
-public class ExtractCommand implements Callable<Integer> {
-    @ParentCommand
-    Application app;
-
+public class ExtractCommand extends BaseCommand {
 
     public static class Config {
         @Option(names = {"-r", "--repository"}, paramLabel = "<repo>", description = "repository path")
         Path repository = Path.of(".git");
-
-        @Option(names = {"-f", "--database"}, paramLabel = "<db>", description = "database file path")
-        Path database = Path.of("phph.db");
 
         @Option(names = {"-p", "--parallel"}, paramLabel = "<nthreads>", description = "number of threads to use in parallel",
                 arity = "0..1", fallbackValue = "0")
@@ -71,46 +55,28 @@ public class ExtractCommand implements Callable<Integer> {
     @Mixin
     Config config = new Config();
 
-    Handle handle;
-
-    Dao dao;
-
     ChunkExtractor extractor;
 
     @Override
-    public Integer call() {
-        final Stopwatch w = Stopwatch.createStarted();
-        try {
-            setupChunkExtractor();
-            Files.deleteIfExists(config.database);
-            final Jdbi jdbi = Database.openDatabase(config.database);
-            try (final Handle h = this.handle = jdbi.open()) {
-                Database.initializeDatabase(h);
-                this.dao = h.attach(Dao.class);
-                h.useTransaction(h0 -> process(config.repository, config.from, config.to));
-            }
-        } catch (final IOException e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            log.info("Finished -- {} ms", w.elapsed(TimeUnit.MILLISECONDS));
-        }
-        return 0;
+    protected void setUp() {
+        this.extractor = createChunkExtractor();
     }
 
-    private void process(final Path repositoryPath, final String from, final String to) {
-        try (final RepositoryAccess ra = new RepositoryAccess(repositoryPath)) {
-            log.info("Process {}", repositoryPath);
-            final long repoId = dao.insertRepository(repositoryPath.toString());
+    @Override
+    protected void process() {
+        try (final RepositoryAccess ra = new RepositoryAccess(config.repository)) {
+            log.info("Process {}", config.repository);
+            final long repoId = dao.insertRepository(config.repository.toString());
 
             final TaskQueue<Dao> queue = new TaskQueue<>(config.nthreads);
-            for (final RevCommit c : ra.walk(from, to)) {
+            for (final RevCommit c : ra.walk(config.from, config.to)) {
                 queue.register(() -> process(c, repoId, ra.inherit()));
             }
             queue.consumeAll(dao);
         }
     }
 
-    private Consumer<Dao> process(final RevCommit c, final long repoId, final RepositoryAccess ra) {
+    protected Consumer<Dao> process(final RevCommit c, final long repoId, final RepositoryAccess ra) {
         final List<Chunk> chunks = extractor.extract(c, ra);
         if (chunks.isEmpty()) {
             return (dao) -> {};
@@ -136,9 +102,9 @@ public class ExtractCommand implements Callable<Integer> {
         };
     }
 
-    private void setupChunkExtractor() {
+    private ChunkExtractor createChunkExtractor() {
         final Differencer<Statement> differencer = DifferencerFactory.create(config.differencer);
         final Splitter splitter = SplitterFactory.create(config.splitter);
-        this.extractor = new ChunkExtractor(differencer, splitter, config.minChunkSize, config.maxChunkSize);
+        return new ChunkExtractor(differencer, splitter, config.minChunkSize, config.maxChunkSize);
     }
 }

@@ -1,14 +1,11 @@
 package jp.ac.titech.c.phph.cmd;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
-import jp.ac.titech.c.phph.Application;
 import jp.ac.titech.c.phph.util.FileTree;
 import jp.ac.titech.c.phph.SourceFile;
 import jp.ac.titech.c.phph.util.TaskQueue;
 import jp.ac.titech.c.phph.db.Dao;
-import jp.ac.titech.c.phph.db.Database;
 import jp.ac.titech.c.phph.model.Fragment;
 import jp.ac.titech.c.phph.model.Hash;
 import jp.ac.titech.c.phph.model.Match;
@@ -16,12 +13,9 @@ import jp.ac.titech.c.phph.model.Query;
 import jp.ac.titech.c.phph.parse.Splitter;
 import jp.ac.titech.c.phph.parse.SplitterFactory;
 import lombok.extern.log4j.Log4j2;
-import org.jdbi.v3.core.Handle;
-import org.jdbi.v3.core.Jdbi;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
-import picocli.CommandLine.ParentCommand;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,25 +24,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 @Log4j2
 @Command(name = "find", description = "Find change opportunities")
-public class FindCommand implements Callable<Integer> {
-    @ParentCommand
-    Application app;
-
+public class FindCommand extends BaseCommand {
     public static class Config {
         @Option(names = {"-r", "--repository"}, paramLabel = "<repo>", description = "repository path")
         Path repository = Path.of(".git");
 
         @Option(names = {"-a", "--at"}, paramLabel = "<revision>", description = "revision to retrieve (default: ${DEFAULT-VALUE})")
         String revision = "HEAD";
-
-        @Option(names = {"-f", "--database"}, paramLabel = "<db>", description = "database file path")
-        Path database = Path.of("phph.db");
 
         @Option(names = { "-p", "--parallel" }, paramLabel = "<nthreads>", description = "number of threads to use in parallel",
                 arity = "0..1", fallbackValue = "0")
@@ -64,31 +50,11 @@ public class FindCommand implements Callable<Integer> {
     @Mixin
     Config config = new Config();
 
-    Handle handle;
-
-    Dao dao;
-
     Map<String, String> sources;
 
     SetMultimap<Hash, SourceFile> finder;
 
     @Override
-    public Integer call() {
-        final Stopwatch w = Stopwatch.createStarted();
-        try {
-            final Jdbi jdbi = Database.openDatabase(config.database);
-            try (final Handle h = this.handle = jdbi.open()) {
-                this.dao = h.attach(Dao.class);
-                h.useTransaction(h0 -> process());
-            }
-        } catch (final IOException e) {
-            log.error(e.getMessage(), e);
-        } finally {
-            log.info("Finished -- {} ms", w.elapsed(TimeUnit.MILLISECONDS));
-        }
-        return 0;
-    }
-
     protected void process() throws IOException {
         log.debug("Retrieving source code...");
         this.sources = FileTree.retrieveGitTree(config.repository, config.revision, config.prefix, ".java");
