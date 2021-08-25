@@ -42,6 +42,13 @@ public interface Dao {
     @RegisterRowMapper(FragmentRowMapper.class)
     ResultIterable<Fragment> listFragments();
 
+    @SqlQuery("SELECT * FROM fragments WHERE hash LIKE ?")
+    @RegisterRowMapper(FragmentRowMapper.class)
+    ResultIterable<Fragment> searchFragments(final String pattern);
+
+    @SqlQuery("SELECT count(*) FROM fragments WHERE hash LIKE ?")
+    int countFragments(final String pattern);
+
     @SqlQuery("SELECT * FROM fragments WHERE hash = :h.name LIMIT 1")
     @RegisterRowMapper(FragmentRowMapper.class)
     Fragment findFragment(@BindBean("h") final Hash hash);
@@ -80,6 +87,10 @@ public interface Dao {
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatterns();
 
+    @SqlQuery("SELECT * FROM patterns WHERE old = :f.hash.name OR new = :f.hash.name")
+    @RegisterRowMapper(PatternRowMapper.class)
+    ResultIterable<Pattern> listPatterns(@BindBean("f") final Fragment f);
+
     @SqlQuery("SELECT * FROM patterns AS p WHERE p.supportH >= ? AND p.confidenceH >= ?")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatternsBySupportH(final int minSupportH, final float minConfidenceH);
@@ -100,7 +111,7 @@ public interface Dao {
     // -------
 
     @SqlQuery("INSERT INTO matches (query, file, begin, end) VALUES (:m.query.name, :m.file, :m.beginLine, :m.endLine) RETURNING id")
-    long insertMatch(@BindBean("m") final Match match);
+    long insertMatch(@BindBean("m") final Match m);
 
     @SqlUpdate("DELETE FROM matches")
     void clearMatches();
