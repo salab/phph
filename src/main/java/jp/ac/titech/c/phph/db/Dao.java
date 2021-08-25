@@ -99,7 +99,7 @@ public interface Dao {
 
     // -------
 
-    @SqlQuery("INSERT INTO matches (query, file, begin, end) VALUES (:m.query.raw, :m.file, :m.beginLine, :m.endLine) RETURNING id")
+    @SqlQuery("INSERT INTO matches (query, file, begin, end) VALUES (:m.query.name, :m.file, :m.beginLine, :m.endLine) RETURNING id")
     long insertMatch(@BindBean("m") final Match match);
 
     @SqlUpdate("DELETE FROM matches")
