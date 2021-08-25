@@ -88,7 +88,7 @@ public class ExtractCommand extends BaseCommand {
             if (log.isDebugEnabled()) {
                 log.debug("[{}@{}] {} --> {} at {}:{}",
                         p.toShortString(), c.getId().abbreviate(6).name(),
-                        h.getOldFragment(), h.getNewFragment(), h.getFile(), h.getNewBegin());
+                        h.getOldFragment(), h.getNewFragment(), h.getFile(), h.getNewLines().getBegin());
             }
         }
         return (dao) -> {

@@ -5,6 +5,7 @@ import jp.ac.titech.c.phph.model.Fragment;
 import jp.ac.titech.c.phph.model.Hash;
 import jp.ac.titech.c.phph.model.Match;
 import jp.ac.titech.c.phph.model.Pattern;
+import jp.ac.titech.c.phph.model.Range;
 import lombok.Value;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.result.ResultIterable;
@@ -51,7 +52,7 @@ public interface Dao {
 
     // -------
 
-    @SqlQuery("INSERT INTO chunks (commit_id, file, old_begin, old_end, new_begin, new_end, pattern_hash) VALUES (:commitId, :h.file, :h.oldBegin, :h.oldEnd, :h.newBegin, :h.newEnd, :h.pattern.hash.name) RETURNING id")
+    @SqlQuery("INSERT INTO chunks (commit_id, file, old_begin, old_end, new_begin, new_end, pattern_hash) VALUES (:commitId, :h.file, :h.oldLines.beg, :h.oldLines.end, :h.newLines.begin, :h.newLines.end, :h.pattern.hash.name) RETURNING id")
     long insertChunk(@Bind("commitId") final long commitId, @BindBean("h") final Chunk h);
 
     @SqlQuery("SELECT * FROM chunks WHERE pattern_hash = :h.name")

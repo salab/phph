@@ -55,8 +55,8 @@ public class SourceFile implements Comparable<SourceFile> {
         for (final int index : resolver.get(query.get(0))) {
             if (match(query, index)) {
                 // matched
-                final int beginLine = statements.get(index).getBeginLine();
-                final int endLine = statements.get(index + query.size() - 1).getEndLine();
+                final int beginLine = statements.get(index).getLines().getBegin();
+                final int endLine = statements.get(index + query.size() - 1).getLines().getEnd();
                 result.add(new Match(query.getFragment().getHash(), path.toString(), beginLine, endLine));
             }
         }

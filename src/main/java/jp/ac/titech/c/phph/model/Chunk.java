@@ -11,19 +11,19 @@ import java.util.List;
  * A deleted and added sequence of statements.
  */
 @RequiredArgsConstructor
-@ToString(of = {"file", "oldBegin", "oldEnd", "newBegin", "newEnd"})
+@ToString(of = {"file", "oldLines", "newLines"})
 public class Chunk {
     @Getter
     private final String file;
 
     @Getter
-    private final int oldBegin, oldEnd;
+    private final Range oldLines;
 
     @Getter
     private final List<Statement> oldStatements;
 
     @Getter
-    private final int newBegin, newEnd;
+    private final Range newLines;
 
     @Getter
     private final List<Statement> newStatements;
@@ -44,21 +44,21 @@ public class Chunk {
         int oldBegin, oldEnd, newBegin, newEnd;
         if (oldSlice.isEmpty()) {
             // ADD
-            oldBegin = e.getBeginA() == oldStatements.size() ? oldStatements.get(oldStatements.size() - 1).getEndLine() : oldStatements.get(e.getBeginA()).getBeginLine();
+            oldBegin = e.getBeginA() == oldStatements.size() ? oldStatements.get(oldStatements.size() - 1).getLines().getEnd() : oldStatements.get(e.getBeginA()).getLines().getBegin();
             oldEnd = oldBegin;
         } else {
-            oldBegin = oldSlice.get(0).getBeginLine();
-            oldEnd = oldSlice.get(oldSlice.size() - 1).getEndLine();
+            oldBegin = oldSlice.get(0).getLines().getBegin();
+            oldEnd = oldSlice.get(oldSlice.size() - 1).getLines().getEnd();
         }
         if (newSlice.isEmpty()) {
             // DEL
-            newBegin = e.getBeginB() == newStatements.size() ? newStatements.get(newStatements.size() - 1).getEndLine() : newStatements.get(e.getBeginB()).getBeginLine();
+            newBegin = e.getBeginB() == newStatements.size() ? newStatements.get(newStatements.size() - 1).getLines().getEnd() : newStatements.get(e.getBeginB()).getLines().getBegin();
             newEnd = newBegin;
         } else {
-            newBegin = newSlice.get(0).getBeginLine();
-            newEnd = newSlice.get(newSlice.size() - 1).getEndLine();
+            newBegin = newSlice.get(0).getLines().getBegin();
+            newEnd = newSlice.get(newSlice.size() - 1).getLines().getEnd();
         }
-        return new Chunk(file, oldBegin, oldEnd, oldSlice, newBegin, newEnd, newSlice);
+        return new Chunk(file, Range.of(oldBegin, oldEnd), oldSlice, Range.of(newBegin, newEnd), newSlice);
     }
 
     public ChangeType getType() {

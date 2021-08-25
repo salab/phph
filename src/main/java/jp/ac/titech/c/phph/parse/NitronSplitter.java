@@ -8,6 +8,7 @@ import com.github.durun.nitron.core.ast.visitor.AstLineGetVisitor;
 import com.github.durun.nitron.core.ast.visitor.LineRange;
 import com.github.durun.nitron.core.config.LangConfig;
 import com.github.durun.nitron.core.parser.NitronParser;
+import jp.ac.titech.c.phph.model.Range;
 import jp.ac.titech.c.phph.model.Statement;
 
 import java.io.StringReader;
@@ -46,6 +47,6 @@ public class NitronSplitter implements Splitter {
         final AstNode nNode = normalizer.process(node);
         if (nNode == null) return null;
         final String nText = nNode.getText();
-        return Statement.of(rText, nText, lines.getFirst(), lines.getLast() + 1);
+        return Statement.of(rText, nText, Range.of(lines.getFirst(), lines.getLast() + 1));
     }
 }

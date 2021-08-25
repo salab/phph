@@ -1,5 +1,6 @@
 package jp.ac.titech.c.phph.parse;
 
+import jp.ac.titech.c.phph.model.Range;
 import jp.ac.titech.c.phph.model.Statement;
 import yoshikihigo.cpanalyzer.CPAConfig;
 import yoshikihigo.cpanalyzer.LANGUAGE;
@@ -25,6 +26,6 @@ public class MPASplitter implements Splitter {
     }
 
     private Statement convert(final yoshikihigo.cpanalyzer.data.Statement s) {
-        return Statement.of(s.rText, s.nText, s.fromLine, s.toLine + 1);
+        return Statement.of(s.rText, s.nText, Range.of(s.fromLine, s.toLine + 1));
     }
 }

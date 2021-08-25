@@ -15,33 +15,23 @@ public class Statement {
     private final String normalized;
 
     /**
-     * The line number at witch this statement begins. 1-origin.
-     */
-    @Getter
-    private final int beginLine;
-
-    /**
-     * The line number at which this statement ends.
+     * The line number at witch this statement begins and ends. 1-origin.
      * The ending line should be excluded from the actual region; the region is "[begin, end)".
-     * For example, if a statement is within a single line, <code>endLine == beginLine + 1</code> holds.
+     * For example, if a statement is within a single line, <code>end == begin + 1</code> holds.
      */
     @Getter
-    private final int endLine;
+    private final Range lines;
 
-    public static Statement of(final String raw, final String normalized, final int beginLine, final int endLine) {
-        return new Statement(raw, normalized, beginLine, endLine);
+    public static Statement of(final String raw, final String normalized, final Range lines) {
+        return new Statement(raw, normalized, lines);
     }
 
-    public static Statement of(final String normalized, final int beginLine, final int endLine) {
-        return new Statement(null, normalized, beginLine, endLine);
+    public static Statement of(final String normalized, final Range lines) {
+        return new Statement(null, normalized, lines);
     }
 
     @Override
     public String toString() {
         return normalized;
-    }
-
-    public int getLength() {
-        return endLine - beginLine;
     }
 }

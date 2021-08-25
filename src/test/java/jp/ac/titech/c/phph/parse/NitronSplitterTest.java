@@ -2,6 +2,7 @@ package jp.ac.titech.c.phph.parse;
 
 import com.github.durun.nitron.core.config.LangConfig;
 import com.github.durun.nitron.core.config.loader.NitronConfigLoader;
+import jp.ac.titech.c.phph.model.Range;
 import jp.ac.titech.c.phph.model.Statement;
 import org.junit.jupiter.api.Test;
 
@@ -28,17 +29,17 @@ class NitronSplitterTest {
         final var statements = splitter.split(source);
         System.out.println(statements);
 
-        assertEqualsStatement(Statement.of("class Sample {", "class Sample {", 2, 3), statements.get(0));
-        assertEqualsStatement(Statement.of("public static void main ( String [ ] args ) {", "void main ( String [ ] $V0 ) {", 3, 4), statements.get(1));
-        assertEqualsStatement(Statement.of("String message = \"Hello, world!\" ;", "String $V0 = \"S\" ;", 4, 5), statements.get(2));
-        assertEqualsStatement(Statement.of("System . out . println ( message ) ;", "$V1 . out . println ( $V0 ) ;", 5, 7), statements.get(3));
+        assertEqualsStatement(Statement.of("class Sample {", "class Sample {", Range.at(2)), statements.get(0));
+        assertEqualsStatement(Statement.of("public static void main ( String [ ] args ) {", "void main ( String [ ] $V0 ) {", Range.at(3)), statements.get(1));
+        assertEqualsStatement(Statement.of("String message = \"Hello, world!\" ;", "String $V0 = \"S\" ;", Range.at(4)), statements.get(2));
+        assertEqualsStatement(Statement.of("System . out . println ( message ) ;", "$V1 . out . println ( $V0 ) ;", Range.of(5, 7)), statements.get(3));
     }
 
     private static void assertEqualsStatement(Statement expected, Statement actual) {
         assertEquals(expected.getRaw(), actual.getRaw());
         assertEquals(expected.getNormalized(), actual.getNormalized());
-        assertEquals(expected.getBeginLine(), actual.getBeginLine());
-        assertEquals(expected.getEndLine(), actual.getEndLine());
+        assertEquals(expected.getLines().getBegin(), actual.getLines().getBegin());
+        assertEquals(expected.getLines().getEnd(), actual.getLines().getEnd());
     }
 
     private static LangConfig loadLangConfig(final String lang) {
