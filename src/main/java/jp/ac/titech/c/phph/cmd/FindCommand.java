@@ -43,8 +43,8 @@ public class FindCommand extends BaseCommand {
         @Option(names = "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         SplitterFactory.Type splitter = SplitterFactory.Type.mpa;
 
-        @Option(names = "--prefix", paramLabel = "<path>", description = "path prefix")
-        String prefix = null;
+        @Option(names = "--prefix", paramLabel = "<path>", description = "path prefix", arity = "0..*")
+        String[] prefix;
     }
 
     @Mixin
@@ -84,7 +84,7 @@ public class FindCommand extends BaseCommand {
         for (final SourceFile file : getCandidateFiles(query)) {
             for (final Match match : file.find(query)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("{} matched at {}:{}", query.getFragment().getHash().abbreviate(6), file.getPath(), match.getBeginLine());
+                    log.debug("Query {} matched at {}:{}", query.getFragment().getHash(), file.getPath(), match.getBeginLine());
                 }
                 result.add(match);
             }

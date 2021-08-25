@@ -5,6 +5,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
 
@@ -30,14 +31,14 @@ public class FileTree {
     /**
      * Obtains the contents of the given commit in a Git repository.
      */
-    public static Map<String, String> retrieveGitTree(final Path repository, final String revision, final String prefix, final String suffix) throws IOException {
+    public static Map<String, String> retrieveGitTree(final Path repository, final String revision, final String[] prefix, final String suffix) throws IOException {
         final Map<String, String> result = new TreeMap<>();
         try (final RepositoryAccess ra = new RepositoryAccess(repository)) {
             final RevCommit commit = ra.resolve(revision);
             final TreeWalk tw = new TreeWalk(ra.getReader());
             tw.addTree(commit.getTree());
             tw.setRecursive(true);
-            tw.setFilter(AndTreeFilter.create(prefix == null ? TreeFilter.ALL : PathFilter.create(prefix),
+            tw.setFilter(AndTreeFilter.create(prefix == null ? TreeFilter.ALL : PathFilterGroup.createFromStrings(prefix),
                                               suffix == null ? TreeFilter.ALL : PathSuffixFilter.create(suffix)));
             while (tw.next()) {
                 final String path = tw.getPathString();
