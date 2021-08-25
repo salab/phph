@@ -40,7 +40,7 @@ public class ExtractCommand extends BaseCommand {
         String to = "HEAD";
 
         @Option(names = "--differencer", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
-        DifferencerFactory.Type differencer = DifferencerFactory.Type.dp;
+        DifferencerFactory.Type differencer = DifferencerFactory.Type.myers;
 
         @Option(names = "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         SplitterFactory.Type splitter = SplitterFactory.Type.mpa;
