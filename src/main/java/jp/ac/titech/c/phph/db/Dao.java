@@ -5,6 +5,7 @@ import jp.ac.titech.c.phph.model.Fragment;
 import jp.ac.titech.c.phph.model.Hash;
 import jp.ac.titech.c.phph.model.Match;
 import jp.ac.titech.c.phph.model.Pattern;
+import lombok.Value;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.result.ResultIterable;
 import org.jdbi.v3.core.statement.StatementContext;
@@ -23,15 +24,58 @@ public interface Dao {
     @SqlQuery("INSERT INTO repositories (url) VALUES (?) RETURNING id")
     long insertRepository(final String url);
 
+    @SqlQuery("SELECT url FROM repositories LIMIT 1")
+    String findRepository();
+
     // -------
 
     @SqlQuery("INSERT INTO commits (repository_id, hash, message) VALUES (?, ?, ?) RETURNING id")
     long insertCommit(final long repositoryId, final String hash, final String message);
 
+    @SqlQuery("SELECT * FROM commits WHERE id = ?")
+    @RegisterRowMapper(CommitRowMapper.class)
+    Commit findCommit(final int id);
+
+    class CommitRowMapper implements RowMapper<Commit> {
+        @Override
+        public Commit map(final ResultSet rs, final StatementContext ctx) throws SQLException {
+            return new Commit(rs.getString("hash"), rs.getString("message"));
+        }
+    }
+
+    @Value
+    class Commit {
+        String hash;
+        String message;
+    }
+
     // -------
 
     @SqlQuery("INSERT INTO chunks (commit_id, file, old_begin, old_end, new_begin, new_end, pattern_hash) VALUES (:commitId, :h.file, :h.oldBegin, :h.oldEnd, :h.newBegin, :h.newEnd, :h.pattern.hash.name) RETURNING id")
     long insertChunk(@Bind("commitId") final long commitId, @BindBean("h") final Chunk h);
+
+    @SqlQuery("SELECT * FROM chunks WHERE pattern_hash = :h.name")
+    @RegisterRowMapper(ChunkRowMapper.class)
+    ResultIterable<DBChunk> listChunks(@BindBean("h") final Hash patternHash);
+
+    class ChunkRowMapper implements RowMapper<DBChunk> {
+        @Override
+        public DBChunk map(final ResultSet rs, final StatementContext ctx) throws SQLException {
+            return new DBChunk(rs.getInt("commitId"),
+                    rs.getString("file"),
+                    Range.of(rs.getInt("old_begin"), rs.getInt("old_end")),
+                    Range.of(rs.getInt("new_begin"), rs.getInt("new_end")));
+        }
+    }
+
+    @Value
+    class DBChunk {
+        // TODO: Merge
+        int commitId;
+        String file;
+        Range oldLines;
+        Range newLines;
+    }
 
     // -------
 
@@ -44,10 +88,10 @@ public interface Dao {
 
     @SqlQuery("SELECT * FROM fragments WHERE hash LIKE ?")
     @RegisterRowMapper(FragmentRowMapper.class)
-    ResultIterable<Fragment> searchFragments(final String pattern);
+    ResultIterable<Fragment> searchFragments(final String like);
 
     @SqlQuery("SELECT count(*) FROM fragments WHERE hash LIKE ?")
-    int countFragments(final String pattern);
+    int countFragments(final String like);
 
     @SqlQuery("SELECT * FROM fragments WHERE hash = :h.name LIMIT 1")
     @RegisterRowMapper(FragmentRowMapper.class)
@@ -98,6 +142,13 @@ public interface Dao {
     @SqlQuery("SELECT * FROM patterns AS p WHERE p.supportC >= ? AND p.confidenceC >= ?")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatternsBySupportC(final int minSupportC, final float minConfidenceC);
+
+    @SqlQuery("SELECT * FROM patterns WHERE hash LIKE ?")
+    @RegisterRowMapper(PatternRowMapper.class)
+    ResultIterable<Pattern> searchPatterns(final String like);
+
+    @SqlQuery("SELECT count(*) FROM patterns WHERE hash LIKE ?")
+    int countPatterns(final String like);
 
     class PatternRowMapper implements RowMapper<Pattern> {
         @Override
