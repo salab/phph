@@ -42,10 +42,10 @@ public class NitronSplitter implements Splitter {
 
     private Statement normalizeAndConvert(final AstNode node) {
         final String rText = node.getText();
-        final LineRange lines = node.accept(AstLineGetVisitor.INSTANCE);    // 0-origin
+        final LineRange lines = node.accept(AstLineGetVisitor.INSTANCE);
         final AstNode nNode = normalizer.process(node);
         if (nNode == null) return null;
         final String nText = nNode.getText();
-        return Statement.of(rText, nText, lines.getFirst() + 1, lines.getLast() + 2);
+        return Statement.of(rText, nText, lines.getFirst(), lines.getLast() + 1);
     }
 }
