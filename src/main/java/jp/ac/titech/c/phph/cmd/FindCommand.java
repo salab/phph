@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 public class FindCommand extends BaseCommand {
     public static class Config {
         @Option(names = {"-r", "--repository"}, paramLabel = "<repo>", description = "repository path")
-        Path repository = Path.of(".git");
+        Path repository;
 
         @Option(names = {"-a", "--at"}, paramLabel = "<revision>", description = "revision to retrieve (default: ${DEFAULT-VALUE})")
         String revision = "HEAD";
@@ -56,6 +56,9 @@ public class FindCommand extends BaseCommand {
 
     @Override
     protected void process() throws IOException {
+        if (config.repository == null) {
+            config.repository = Path.of(dao.findRepository().get());
+        }
         log.debug("Retrieving source code...");
         this.sources = FileTree.retrieveGitTree(config.repository, config.revision, config.prefix, ".java");
         this.finder = buildFinder();
