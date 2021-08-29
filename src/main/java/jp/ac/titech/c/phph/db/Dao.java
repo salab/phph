@@ -18,7 +18,7 @@ import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Optional;
 
 public interface Dao {
 
@@ -52,7 +52,7 @@ public interface Dao {
 
     // -------
 
-    @SqlQuery("INSERT INTO chunks (commit_id, file, old_begin, old_end, new_begin, new_end, pattern_hash) VALUES (:commitId, :h.file, :h.oldLines.beg, :h.oldLines.end, :h.newLines.begin, :h.newLines.end, :h.pattern.hash.name) RETURNING id")
+    @SqlQuery("INSERT INTO chunks (commit_id, file, old_begin, old_end, new_begin, new_end, pattern_hash) VALUES (:commitId, :h.file, :h.oldLines.begin, :h.oldLines.end, :h.newLines.begin, :h.newLines.end, :h.pattern.hash.name) RETURNING id")
     long insertChunk(@Bind("commitId") final long commitId, @BindBean("h") final Chunk h);
 
     @SqlQuery("SELECT * FROM chunks WHERE pattern_hash = :h.name")
@@ -62,7 +62,7 @@ public interface Dao {
     class ChunkRowMapper implements RowMapper<DBChunk> {
         @Override
         public DBChunk map(final ResultSet rs, final StatementContext ctx) throws SQLException {
-            return new DBChunk(rs.getInt("commitId"),
+            return new DBChunk(rs.getInt("commit_id"),
                     rs.getString("file"),
                     Range.of(rs.getInt("old_begin"), rs.getInt("old_end")),
                     Range.of(rs.getInt("new_begin"), rs.getInt("new_end")));
@@ -97,6 +97,10 @@ public interface Dao {
     @SqlQuery("SELECT * FROM fragments WHERE hash = :h.name LIMIT 1")
     @RegisterRowMapper(FragmentRowMapper.class)
     Fragment findFragment(@BindBean("h") final Hash hash);
+
+    @SqlQuery("SELECT * FROM fragments WHERE text = ? LIMIT 1")
+    @RegisterRowMapper(FragmentRowMapper.class)
+    Optional<Fragment> lookupFragment(final String text);
 
     class FragmentRowMapper implements RowMapper<Fragment> {
         @Override
@@ -162,7 +166,7 @@ public interface Dao {
 
     // -------
 
-    @SqlQuery("INSERT INTO matches (query, file, begin, end) VALUES (:m.query.name, :m.file, :m.beginLine, :m.endLine) RETURNING id")
+    @SqlQuery("INSERT INTO matches (query, file, begin, end) VALUES (:m.query.name, :m.file, :m.lines.begin, :m.lines.end) RETURNING id")
     long insertMatch(@BindBean("m") final Match m);
 
     @SqlUpdate("DELETE FROM matches")

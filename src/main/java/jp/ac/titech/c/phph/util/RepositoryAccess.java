@@ -11,6 +11,8 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import java.io.IOException;
@@ -157,6 +159,26 @@ public class RepositoryAccess implements AutoCloseable {
         } catch (final IOException e) {
             log.error(e.getMessage(), e);
             return Collections.emptyList();
+        }
+    }
+
+    public String readFile(final String commitName, final String path) {
+        try {
+            final ObjectId commitId = repository.resolve(commitName);
+            RevWalk revWalk = new RevWalk(repository);
+            final RevCommit commit = getWalk().parseCommit(commitId);
+            final TreeWalk treeWalk = new TreeWalk(repository);
+            treeWalk.addTree(commit.getTree());
+            treeWalk.setRecursive(true);
+            treeWalk.setFilter(PathFilter.create(path));
+            if (!treeWalk.next()) {
+                return null;
+            }
+            ObjectId blobId = treeWalk.getObjectId(0);
+            return readBlob(blobId);
+        } catch (final IOException e) {
+            log.error(e.getMessage(), e);
+            return null;
         }
     }
 
