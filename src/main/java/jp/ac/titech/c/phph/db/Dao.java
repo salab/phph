@@ -26,7 +26,7 @@ public interface Dao {
     long insertRepository(final String url);
 
     @SqlQuery("SELECT url FROM repositories LIMIT 1")
-    String findRepository();
+    Optional<String> findRepository();
 
     // -------
 
@@ -35,7 +35,7 @@ public interface Dao {
 
     @SqlQuery("SELECT * FROM commits WHERE id = ?")
     @RegisterRowMapper(CommitRowMapper.class)
-    Commit findCommit(final int id);
+    Optional<Commit> findCommit(final int id);
 
     class CommitRowMapper implements RowMapper<Commit> {
         @Override
@@ -53,7 +53,7 @@ public interface Dao {
     // -------
 
     @SqlQuery("INSERT INTO chunks (commit_id, file, old_begin, old_end, new_begin, new_end, pattern_hash) VALUES (:commitId, :h.file, :h.oldLines.begin, :h.oldLines.end, :h.newLines.begin, :h.newLines.end, :h.pattern.hash.name) RETURNING id")
-    long insertChunk(@Bind("commitId") final long commitId, @BindBean("h") final Chunk h);
+    long insertChunk(@Bind("commitId") final long commitId, @BindBean("h") final Chunk chunk);
 
     @SqlQuery("SELECT * FROM chunks WHERE pattern_hash = :h.name")
     @RegisterRowMapper(ChunkRowMapper.class)
@@ -81,7 +81,7 @@ public interface Dao {
     // -------
 
     @SqlUpdate("INSERT OR IGNORE INTO fragments (text, hash) VALUES (:f.text, :f.hash.name)")
-    void insertFragment(@BindBean("f") final Fragment f);
+    void insertFragment(@BindBean("f") final Fragment fragment);
 
     @SqlQuery("SELECT * FROM fragments")
     @RegisterRowMapper(FragmentRowMapper.class)
@@ -96,7 +96,7 @@ public interface Dao {
 
     @SqlQuery("SELECT * FROM fragments WHERE hash = :h.name LIMIT 1")
     @RegisterRowMapper(FragmentRowMapper.class)
-    Fragment findFragment(@BindBean("h") final Hash hash);
+    Optional<Fragment> findFragment(@BindBean("h") final Hash hash);
 
     @SqlQuery("SELECT * FROM fragments WHERE text = ? LIMIT 1")
     @RegisterRowMapper(FragmentRowMapper.class)
@@ -112,7 +112,7 @@ public interface Dao {
     // -------
 
     @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, type, hash) VALUES (:p.oldHash.name, :p.newHash.name, :p.type.id, :p.hash.name)")
-    void insertPattern(@BindBean("p") final Pattern p);
+    void insertPattern(@BindBean("p") final Pattern pattern);
 
     @SqlUpdate("UPDATE patterns AS p SET supportH = (SELECT count(*) FROM chunks AS h WHERE h.pattern_hash = p.hash)")
     void computeSupportH();
@@ -132,13 +132,21 @@ public interface Dao {
     @SqlUpdate("UPDATE patterns AS p SET matchN = (SELECT count(*) FROM matches AS m WHERE m.query = p.new)")
     void computeMatchN();
 
+    @SqlQuery("SELECT * FROM patterns WHERE hash = :h.name")
+    @RegisterRowMapper(PatternRowMapper.class)
+    Optional<Pattern> searchPatterns(@BindBean("h") final Hash hash);
+
+    @SqlQuery("SELECT * FROM patterns WHERE hash LIKE ?")
+    @RegisterRowMapper(PatternRowMapper.class)
+    ResultIterable<Pattern> searchPatterns(final String like);
+
     @SqlQuery("SELECT * FROM patterns")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatterns();
 
     @SqlQuery("SELECT * FROM patterns WHERE old = :f.hash.name OR new = :f.hash.name")
     @RegisterRowMapper(PatternRowMapper.class)
-    ResultIterable<Pattern> listPatterns(@BindBean("f") final Fragment f);
+    ResultIterable<Pattern> listPatterns(@BindBean("f") final Fragment fragment);
 
     @SqlQuery("SELECT * FROM patterns AS p WHERE p.supportH >= ? AND p.confidenceH >= ?")
     @RegisterRowMapper(PatternRowMapper.class)
@@ -147,10 +155,6 @@ public interface Dao {
     @SqlQuery("SELECT * FROM patterns AS p WHERE p.supportC >= ? AND p.confidenceC >= ?")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatternsBySupportC(final int minSupportC, final float minConfidenceC);
-
-    @SqlQuery("SELECT * FROM patterns WHERE hash LIKE ?")
-    @RegisterRowMapper(PatternRowMapper.class)
-    ResultIterable<Pattern> searchPatterns(final String like);
 
     @SqlQuery("SELECT count(*) FROM patterns WHERE hash LIKE ?")
     int countPatterns(final String like);
@@ -167,7 +171,7 @@ public interface Dao {
     // -------
 
     @SqlQuery("INSERT INTO matches (query, file, begin, end) VALUES (:m.query.name, :m.file, :m.lines.begin, :m.lines.end) RETURNING id")
-    long insertMatch(@BindBean("m") final Match m);
+    long insertMatch(@BindBean("m") final Match match);
 
     @SqlUpdate("DELETE FROM matches")
     void clearMatches();

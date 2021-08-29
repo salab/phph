@@ -75,15 +75,16 @@ public class ShowCommand extends BaseCommand {
         if (count == 1) {
             final Pattern p = dao.searchPatterns(like).findFirst().get();
             System.out.printf("Hash: %s\n", p.getHash());
-            System.out.printf("------\n%s\n------\n%s\n------\n", dao.findFragment(p.getOldHash()).getText(), dao.findFragment(p.getNewHash()).getText());
+            System.out.printf("------\n%s\n------\n%s\n------\n", dao.findFragment(p.getOldHash()).get().getText(),
+                                                                  dao.findFragment(p.getNewHash()).get().getText());
             System.out.println("Chunk:");
             int cid = -1;
             Dao.Commit commit = null;
-            final String repository = dao.findRepository();
+            final String repository = dao.findRepository().get();
             for (final Dao.DBChunk h : dao.listChunks(p.getHash())) {
                 if (cid != h.getCommitId()) {
                     cid = h.getCommitId();
-                    commit = dao.findCommit(cid);
+                    commit = dao.findCommit(cid).get();
                     System.out.printf("Commit %s - %s\n", commit.getHash(), commit.getMessage());
                 }
                 System.out.printf("--- %s:%s\n", h.getFile(), h.getOldLines());
