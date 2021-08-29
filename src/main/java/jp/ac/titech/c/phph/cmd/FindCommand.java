@@ -84,7 +84,7 @@ public class FindCommand extends BaseCommand {
         for (final SourceFile file : getCandidateFiles(query)) {
             for (final Match match : file.find(query)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Query {} matched at {}:{}", query.getFragment().getHash(), file.getPath(), match.getBeginLine());
+                    log.debug("Query {} matched at {}:{}", query.getFragment().getHash(), file.getPath(), match.getLines().getBegin());
                 }
                 result.add(match);
             }

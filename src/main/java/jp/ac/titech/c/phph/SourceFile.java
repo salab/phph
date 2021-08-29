@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import jp.ac.titech.c.phph.model.Hash;
 import jp.ac.titech.c.phph.model.Match;
 import jp.ac.titech.c.phph.model.Query;
+import jp.ac.titech.c.phph.model.Range;
 import jp.ac.titech.c.phph.model.Statement;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -57,7 +58,7 @@ public class SourceFile implements Comparable<SourceFile> {
                 // matched
                 final int beginLine = statements.get(index).getLines().getBegin();
                 final int endLine = statements.get(index + query.size() - 1).getLines().getEnd();
-                result.add(new Match(query.getFragment().getHash(), path.toString(), beginLine, endLine));
+                result.add(new Match(query.getFragment().getHash(), path.toString(), Range.of(beginLine, endLine)));
             }
         }
         return result;

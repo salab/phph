@@ -19,4 +19,13 @@ public class Range {
     public int getLength() {
         return end - begin;
     }
+
+    public boolean isEmpty() {
+        return begin == end;
+    }
+
+    @Override
+    public String toString() {
+        return isEmpty() ? String.format("(%d)", begin) : String.format("%d-%d", begin, end - 1);
+    }
 }
