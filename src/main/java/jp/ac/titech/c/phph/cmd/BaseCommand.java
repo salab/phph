@@ -40,7 +40,7 @@ public abstract class BaseCommand implements Callable<Integer> {
         } catch (final Exception e) {
             log.error(e.getMessage(), e);
         } finally {
-            log.info("Finished - {} ms", w.elapsed(TimeUnit.MILLISECONDS));
+            log.debug("Finished - {} ms", w.elapsed(TimeUnit.MILLISECONDS));
         }
         return 0;
     }
