@@ -39,16 +39,16 @@ public class ExtractCommand extends BaseCommand {
         @Option(names = "--end", paramLabel = "<rev>", description = "Revision to start traversing (default: ${DEFAULT-VALUE})")
         String to = "HEAD";
 
-        @Option(names = "--differencer", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+        @Option(names = "--differencer", paramLabel = "<type>", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         DifferencerFactory.Type differencer = DifferencerFactory.Type.myers;
 
-        @Option(names = "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
+        @Option(names = "--splitter", paramLabel = "<type>", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         SplitterFactory.Type splitter = SplitterFactory.Type.mpa;
 
-        @Option(names = "--min-size", description = "Minimum chunk size (default: ${DEFAULT-VALUE})")
+        @Option(names = "--min-size", paramLabel = "<n>", description = "Minimum chunk size (default: ${DEFAULT-VALUE})")
         int minChunkSize = 0;
 
-        @Option(names = "--max-size", description = "Maximum chunk size (default: Integer.MAX_VALUE)")
+        @Option(names = "--max-size", paramLabel = "<n>", description = "Maximum chunk size (default: Integer.MAX_VALUE)")
         int maxChunkSize = Integer.MAX_VALUE;
     }
 
