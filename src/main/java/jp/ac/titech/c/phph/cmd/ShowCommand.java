@@ -2,6 +2,7 @@ package jp.ac.titech.c.phph.cmd;
 
 import jp.ac.titech.c.phph.db.Dao;
 import jp.ac.titech.c.phph.model.Fragment;
+import jp.ac.titech.c.phph.model.Match;
 import jp.ac.titech.c.phph.model.Pattern;
 import jp.ac.titech.c.phph.model.Range;
 import jp.ac.titech.c.phph.util.RepositoryAccess;
@@ -72,29 +73,35 @@ public class ShowCommand extends BaseCommand {
         final String like = prefix + "%";
         final int count = dao.countPatterns(like);
         log.debug("Search patterns for '{}', {} found", like, count);
-        if (count == 1) {
-            final Pattern p = dao.searchPatterns(like).findFirst().get();
-            System.out.printf("Hash: %s\n", p.getHash());
-            System.out.printf("------\n%s\n------\n%s\n------\n", dao.findFragment(p.getOldHash()).get().getText(),
-                                                                  dao.findFragment(p.getNewHash()).get().getText());
-            System.out.println("Chunk:");
-            int cid = -1;
-            Dao.Commit commit = null;
-            final String repository = dao.findRepository().get();
-            for (final Dao.DBChunk h : dao.listChunks(p.getHash())) {
-                if (cid != h.getCommitId()) {
-                    cid = h.getCommitId();
-                    commit = dao.findCommit(cid).get();
-                    System.out.printf("Commit %s - %s\n", commit.getHash(), commit.getMessage());
-                }
-                System.out.printf("--- %s:%s\n", h.getFile(), h.getOldLines());
-                System.out.printf("+++ %s:%s\n", h.getFile(), h.getNewLines());
-                System.out.println(inspectChunk(repository, commit.getHash(), h));
-            }
-        } else {
+        if (count > 1) {
             for (final Fragment f : dao.searchFragments(like)) {
                 System.out.println(f.getHash());
             }
+            return;
+        }
+
+        final Pattern p = dao.searchPatterns(like).findFirst().get();
+        System.out.printf("Hash: %s\n", p.getHash());
+        System.out.printf("------\n%s\n------\n%s\n------\n", dao.findFragment(p.getOldHash()).get().getText(),
+                                                              dao.findFragment(p.getNewHash()).get().getText());
+        System.out.println("Chunk:");
+        int cid = -1;
+        Dao.Commit commit = null;
+        final String repository = dao.findRepository().get();
+        for (final Dao.DBChunk h : dao.listChunks(p.getHash())) {
+            if (cid != h.getCommitId()) {
+                cid = h.getCommitId();
+                commit = dao.findCommit(cid).get();
+                System.out.printf("Commit %s - %s\n", commit.getHash(), commit.getMessage());
+            }
+            System.out.printf("--- %s:%s\n", h.getFile(), h.getOldLines());
+            System.out.printf("+++ %s:%s\n", h.getFile(), h.getNewLines());
+            System.out.println(inspectChunk(repository, commit.getHash(), h));
+        }
+
+        System.out.println("Matches:");
+        for (final Match m : dao.listMatches(p.getOldHash())) {
+            System.out.println(inspectMatch(repository, "HEAD", m));
         }
     }
 
@@ -106,6 +113,16 @@ public class ShowCommand extends BaseCommand {
             sb.append("---------\n");
             final String newSource = ra.readFile(commit, chunk.getFile());
             extract(newSource, chunk.getNewLines(), "+", sb);
+        }
+        return sb.toString();
+    }
+
+    protected String inspectMatch(final String repository, final String commit, final Match m) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%s:%s\n", m.getFile(), m.getLines()));
+        try (final RepositoryAccess ra = new RepositoryAccess(Path.of(repository))) {
+            final String source = ra.readFile(commit, m.getFile());
+            extract(source, m.getLines(), "*", sb);
         }
         return sb.toString();
     }

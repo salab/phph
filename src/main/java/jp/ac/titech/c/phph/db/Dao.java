@@ -173,6 +173,18 @@ public interface Dao {
     @SqlQuery("INSERT INTO matches (query, file, begin, end) VALUES (:m.query.name, :m.file, :m.lines.begin, :m.lines.end) RETURNING id")
     long insertMatch(@BindBean("m") final Match match);
 
+    @SqlQuery("SELECT * FROM matches WHERE query = :h.name")
+    @RegisterRowMapper(MatchRowMapper.class)
+    ResultIterable<Match> listMatches(@BindBean("h") final Hash h);
+
     @SqlUpdate("DELETE FROM matches")
     void clearMatches();
+
+    class MatchRowMapper implements RowMapper<Match> {
+        @Override
+        public Match map(final ResultSet rs, final StatementContext ctx) throws SQLException {
+            return new Match(Hash.parse(rs.getString("query")), rs.getString("file"),
+                    Range.of(rs.getInt("begin"), rs.getInt("end")));
+        }
+    }
 }
