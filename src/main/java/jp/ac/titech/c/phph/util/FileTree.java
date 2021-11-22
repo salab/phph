@@ -1,6 +1,6 @@
 package jp.ac.titech.c.phph.util;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-@Log4j2
+@Slf4j
 public class FileTree {
     /**
      * Obtains the contents of the given directory.

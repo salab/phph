@@ -4,7 +4,7 @@ import jp.ac.titech.c.phph.util.RepositoryAccess;
 import jp.ac.titech.c.phph.diff.Differencer;
 import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.model.Statement;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Log4j2
+@Slf4j
 public class ChunkExtractor {
     private final Differencer<Statement> differencer;
 

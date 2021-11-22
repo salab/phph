@@ -2,12 +2,12 @@ package jp.ac.titech.c.phph.cmd;
 
 import jp.ac.titech.c.phph.model.Fragment;
 import jp.ac.titech.c.phph.model.Pattern;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;
 
 import java.util.Optional;
 
-@Log4j2
+@Slf4j
 @Command(name = "verify", description = "Verify database")
 public class VerifyCommand extends BaseCommand {
     @Override

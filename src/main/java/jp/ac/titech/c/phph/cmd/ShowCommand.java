@@ -7,7 +7,7 @@ import jp.ac.titech.c.phph.model.Match;
 import jp.ac.titech.c.phph.model.Pattern;
 import jp.ac.titech.c.phph.model.Range;
 import jp.ac.titech.c.phph.util.RepositoryAccess;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Log4j2
+@Slf4j
 @Command(name = "show", description = "Inspect objects")
 public class ShowCommand extends BaseCommand {
     public static class Config {

@@ -12,7 +12,7 @@ import jp.ac.titech.c.phph.model.Match;
 import jp.ac.titech.c.phph.model.Query;
 import jp.ac.titech.c.phph.parse.Splitter;
 import jp.ac.titech.c.phph.parse.SplitterFactory;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@Log4j2
+@Slf4j
 @Command(name = "find", description = "Find change opportunities")
 public class FindCommand extends BaseCommand {
     public static class Config {

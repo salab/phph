@@ -1,7 +1,7 @@
 package jp.ac.titech.c.phph.util;
 
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RawText;
@@ -20,7 +20,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
-@Log4j2
+@Slf4j
 public class RepositoryAccess implements AutoCloseable {
     @Getter
     private final Repository repository;

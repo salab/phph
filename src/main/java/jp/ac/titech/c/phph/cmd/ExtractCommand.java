@@ -11,7 +11,7 @@ import jp.ac.titech.c.phph.model.Statement;
 import jp.ac.titech.c.phph.parse.ChunkExtractor;
 import jp.ac.titech.c.phph.parse.Splitter;
 import jp.ac.titech.c.phph.parse.SplitterFactory;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.revwalk.RevCommit;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
 
-@Log4j2
+@Slf4j
 @Command(name = "extract", description = "Extract commits from a repository")
 public class ExtractCommand extends BaseCommand {
 

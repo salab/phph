@@ -3,7 +3,7 @@ package jp.ac.titech.c.phph.cmd;
 import com.google.common.base.Stopwatch;
 import jp.ac.titech.c.phph.db.Dao;
 import jp.ac.titech.c.phph.db.Database;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 import picocli.CommandLine.ParentCommand;
@@ -11,7 +11,7 @@ import picocli.CommandLine.ParentCommand;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-@Log4j2
+@Slf4j
 public abstract class BaseCommand implements Callable<Integer> {
     @ParentCommand
     protected AppCommand app;

@@ -3,15 +3,16 @@ package jp.ac.titech.c.phph.cmd;
 import java.nio.file.Path;
 import java.util.concurrent.Callable;
 
-import lombok.extern.log4j.Log4j2;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.config.Configurator;
+import ch.qos.logback.classic.Level;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.ITypeConverter;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 
-@Log4j2
+@Slf4j
 @Command(version = "phph", sortOptions = false,
          subcommands = {InitCommand.class, ExtractCommand.class, MeasureCommand.class, FindCommand.class,
                         ShowCommand.class, VerifyCommand.class})
@@ -59,13 +60,19 @@ public class AppCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        Configurator.setRootLevel(config.logLevel);
+        setLoggerLevel(Logger.ROOT_LOGGER_NAME, config.logLevel);
         if (config.logLevel == Level.DEBUG || config.logLevel == Level.TRACE) {
             // suppress jgit's log
-            Configurator.setLevel("org.eclipse.jgit", Level.INFO);
+            setLoggerLevel("org.eclipse.jgit", Level.INFO);
         }
 
         log.debug("Set log level to {}", config.logLevel);
         return 0;
+    }
+
+    public static void setLoggerLevel(final String name, final Level level) {
+        final ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(name);
+        logger.setLevel(level);
+        log.debug("Set log level of {} to {}", name, level);
     }
 }

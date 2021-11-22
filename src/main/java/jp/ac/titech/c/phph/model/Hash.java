@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -18,7 +18,7 @@ import java.util.function.Consumer;
  */
 @Value
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-@Log4j2
+@Slf4j
 public class Hash implements Comparable<Hash> {
     /**
      * Zero Id.

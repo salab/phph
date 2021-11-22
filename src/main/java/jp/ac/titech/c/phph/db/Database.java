@@ -1,7 +1,7 @@
 package jp.ac.titech.c.phph.db;
 
 import com.google.common.io.CharStreams;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.statement.SqlLogger;
@@ -17,7 +17,7 @@ import java.sql.SQLException;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-@Log4j2
+@Slf4j
 public class Database {
     public static final String SCHEMA_RESOURCE = "/schema.sql";
 

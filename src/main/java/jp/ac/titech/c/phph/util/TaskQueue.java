@@ -1,7 +1,7 @@
 package jp.ac.titech.c.phph.util;
 
 import com.google.common.util.concurrent.MoreExecutors;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-@Log4j2
+@Slf4j
 public class TaskQueue<T> {
     private final ExecutorService pool;
 

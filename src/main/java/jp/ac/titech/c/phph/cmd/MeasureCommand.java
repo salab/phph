@@ -1,9 +1,9 @@
 package jp.ac.titech.c.phph.cmd;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import picocli.CommandLine.Command;
 
-@Log4j2
+@Slf4j
 @Command(name = "measure", description = "Compute metric values")
 public class MeasureCommand extends BaseCommand {
     @Override
