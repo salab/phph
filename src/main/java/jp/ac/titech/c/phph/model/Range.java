@@ -24,10 +24,14 @@ public class Range {
         return begin == end;
     }
 
+    public boolean isSingle() {
+        return begin + 1 == end;
+    }
+
     @Override
     public String toString() {
-        return isEmpty()        ? String.format("(%d)", begin) :
-               begin + 1 == end ? String.valueOf(begin)
-                                : String.format("%d-%d", begin, end - 1);
+        return isEmpty()  ? String.format("(%d)", begin)
+             : isSingle() ? String.valueOf(begin)
+                          : String.format("%d-%d", begin, end - 1);
     }
 }
