@@ -18,6 +18,8 @@ import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public interface Dao {
@@ -140,7 +142,7 @@ public interface Dao {
 
     @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE hash = :h.name")
     @RegisterRowMapper(PatternRowMapper.class)
-    Optional<Pattern> searchPatterns(@BindBean("h") final Hash hash);
+    Optional<Pattern> searchPattern(@BindBean("h") final Hash hash);
 
     @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE hash LIKE ?")
     @RegisterRowMapper(PatternRowMapper.class)
@@ -168,9 +170,20 @@ public interface Dao {
     class PatternRowMapper implements RowMapper<Pattern> {
         @Override
         public Pattern map(final ResultSet rs, final StatementContext ctx) throws SQLException {
-            return Pattern.of(Hash.parse(rs.getString("old")),
+            final Map<String, Object> metrics = new HashMap<>();
+            metrics.put("supportH", rs.getInt("supportH"));
+            metrics.put("supportC", rs.getInt("supportC"));
+            metrics.put("confidenceH", rs.getFloat("confidenceH"));
+            metrics.put("confidenceC", rs.getFloat("confidenceC"));
+            metrics.put("matchO", rs.getInt("matchO"));
+            metrics.put("matchN", rs.getInt("matchN"));
+
+            return new Pattern(Hash.parse(rs.getString("old")),
                               Hash.parse(rs.getString("new")),
-                              Hash.parse(rs.getString("hash")));
+                              Hash.ZERO,
+                              Hash.ZERO,
+                              Hash.parse(rs.getString("hash")),
+                              metrics);
         }
     }
 

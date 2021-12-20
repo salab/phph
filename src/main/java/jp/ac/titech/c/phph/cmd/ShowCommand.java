@@ -109,7 +109,7 @@ public class ShowCommand extends BaseCommand {
         }
     }
 
-    protected String inspectChunk(final String repository, final String commit, final Dao.DBChunk chunk) {
+    public static String inspectChunk(final String repository, final String commit, final Dao.DBChunk chunk) {
         final StringBuilder sb = new StringBuilder();
         try (final RepositoryAccess ra = new RepositoryAccess(Path.of(repository))) {
             final String oldSource = ra.readFile(commit + "^", chunk.getFile());
@@ -121,7 +121,7 @@ public class ShowCommand extends BaseCommand {
         return sb.toString();
     }
 
-    protected String inspectMatch(final String repository, final String commit, final Match m) {
+    public static String inspectMatch(final String repository, final String commit, final Match m) {
         final StringBuilder sb = new StringBuilder();
         sb.append(String.format("%s:%s\n", m.getFile(), m.getLines()));
         try (final RepositoryAccess ra = new RepositoryAccess(Path.of(repository))) {
@@ -131,7 +131,7 @@ public class ShowCommand extends BaseCommand {
         return sb.toString();
     }
 
-    protected void extract(final String source, final Range r, final String mark, final StringBuilder sb) {
+    public static void extract(final String source, final Range r, final String mark, final StringBuilder sb) {
         final List<String> lines = source.lines().collect(Collectors.toList());
         final int size = (int) Math.log10(lines.size());
         final int delta = 2;

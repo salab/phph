@@ -54,4 +54,10 @@ public class Fragment {
                 .map(Statement::getNormalized)
                 .collect(Collectors.joining("\n"));
     }
+
+    public String getShortText() {
+        final String text = getText();
+        final List<String> lines = text.lines().collect(Collectors.toList());
+        return lines.isEmpty() ? "(empty)" : lines.size() > 1 ? lines.get(0) + " ..." : text;
+    }
 }

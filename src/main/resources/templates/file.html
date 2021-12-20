@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>[[${param.file}]] @ [[${param.commit}]]</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<pre style="margin: 0" th:each="line, stat : ${lines}" th:id="'L' + ${stat.index + 1}">[[${#numbers.formatInteger(stat.index + 1, 5)}]]: [[${line}]]</pre>
+</body>
+</html>

@@ -3,7 +3,10 @@ package jp.ac.titech.c.phph.model;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.Value;
+
+import java.util.Map;
 
 /**
  * A normalized fragment of source code.
@@ -26,6 +29,13 @@ public class Pattern {
 
     @Getter
     Hash hash;
+
+    @Getter
+    Map<String, Object> metrics;
+
+    public Pattern(final Hash oldHash, final Hash newHash, final Hash preContext, final Hash postContext, final Hash hash) {
+        this(oldHash, newHash, preContext, postContext, hash, null);
+    }
 
     public static Pattern of(final Hash oldHash, final Hash newHash, final Hash preContext, final Hash postContext, final Hash hash) {
         return new Pattern(oldHash, newHash, preContext, postContext, hash);

@@ -15,7 +15,7 @@ import picocli.CommandLine.Option;
 @Slf4j
 @Command(version = "phph", sortOptions = false,
          subcommands = {InitCommand.class, ExtractCommand.class, MeasureCommand.class, FindCommand.class,
-                        ShowCommand.class, VerifyCommand.class})
+                        ShowCommand.class, VerifyCommand.class, BrowseCommand.class})
 public class AppCommand implements Callable<Integer> {
     public static class LevelConverter implements ITypeConverter<Level> {
         @Override

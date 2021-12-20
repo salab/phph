@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>phph</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<table>
+  <thead>
+    <tr>
+      <td>Id</td>
+      <td>supportC</td>
+      <td>supportH</td>
+      <td>confidenceC</td>
+      <td>confidenceH</td>
+      <td>matchO</td>
+      <td>matchN</td>
+      <td>Type</td>
+      <td>Body</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="p : ${patterns}">
+      <td><a href="pattern.html" th:href="@{'/pattern/' + ${p.hash}}">[[${p.hash.abbreviate(6)}]]</a></td>
+      <td>[[${p.metrics.supportC}]]</td>
+      <td>[[${p.metrics.supportH}]]</td>
+      <td>[[${p.metrics.confidenceC}]]</td>
+      <td>[[${p.metrics.confidenceH}]]</td>
+      <td>[[${p.metrics.matchO}]]</td>
+      <td>[[${p.metrics.matchN}]]</td>
+      <td>[[${p.type}]]</td>
+      <td>
+      <pre style="background-color: aliceblue; display: inline" th:title="${application.dao.findFragment(p.oldHash).get.text}">[[${application.dao.findFragment(p.oldHash).get.shortText}]]</pre>
+      ->
+      <pre style="background-color: aliceblue; display: inline" th:title="${application.dao.findFragment(p.newHash).get.text}">[[${application.dao.findFragment(p.newHash).get.shortText}]]</pre>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Fragment [[${fragment.hash}]]</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<h1>Fragment [[${fragment.hash}]]</h1>
+<pre style="background-color: aliceblue">[[${application.dao.findFragment(fragment.hash).get.text}]]</pre>
+
+<h2>Patterns</h2>
+<p th:if="${patterns.isEmpty()}">No patterns</p>
+<div th:if="${not patterns.isEmpty()}">
+  <p>[[${patterns.size}]] pattern(s)</p>
+  <ul>
+    <li th:each="p : ${patterns}"><a th:href="@{/pattern/__${p.hash}__}" href="pattern.html">[[${p.hash}]]</a>: [[${p}]]</li>
+  </ul>
+</div>
+
+</body>
+</html>
