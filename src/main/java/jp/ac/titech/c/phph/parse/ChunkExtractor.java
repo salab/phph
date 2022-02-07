@@ -60,6 +60,9 @@ public class ChunkExtractor {
         final String newSource = ra.readBlob(entry.getNewId().toObjectId());
         final List<Statement> oldStatements = splitter.split(oldSource);
         final List<Statement> newStatements = splitter.split(newSource);
+        if (oldStatements.isEmpty() || newStatements.isEmpty()) {
+            return Stream.empty();
+        }
         return differencer.compute(oldStatements, newStatements).stream()
                 .filter(e -> minSize <= e.getLengthA() && e.getLengthA() <= maxSize &&
                              minSize <= e.getLengthB() && e.getLengthB() <= maxSize)
