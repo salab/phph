@@ -24,14 +24,14 @@ CREATE TABLE chunks (
     new_end INTEGER,
     pattern_hash TEXT
 );
-CREATE INDEX chunks_pattern_hash on chunks(pattern_hash);
+CREATE INDEX chunks_pattern_hash ON chunks(pattern_hash);
 
 CREATE TABLE fragments (
     /* id INTEGER PRIMARY KEY AUTOINCREMENT, */
     text TEXT UNIQUE,
     hash TEXT UNIQUE
 );
-CREATE INDEX fragments_hash on fragments(hash);
+CREATE INDEX fragments_hash ON fragments(hash);
 
 CREATE TABLE patterns (
     /* id INTEGER PRIMARY KEY AUTOINCREMENT, */
@@ -43,24 +43,32 @@ CREATE TABLE patterns (
     supportC INTEGER,
     confidenceH REAL,
     confidenceC REAL,
-    matchO INTEGER,
-    matchN INTEGER,
     UNIQUE (old, new)
 );
-CREATE INDEX patterns_old_hash on patterns(old);
-CREATE INDEX patterns_new_hash on patterns(new);
-CREATE INDEX patterns_hash on patterns(hash);
-CREATE INDEX patterns_supportH on patterns(supportH, confidenceH);
-CREATE INDEX patterns_supportC on patterns(supportC, confidenceC);
-CREATE INDEX patterns_confidenceH on patterns(confidenceH);
-CREATE INDEX patterns_confidenceC on patterns(confidenceC);
+CREATE INDEX patterns_old ON patterns(old);
+CREATE INDEX patterns_new ON patterns(new);
+CREATE INDEX patterns_hash ON patterns(hash);
+CREATE INDEX patterns_supportH ON patterns(supportH, confidenceH);
+CREATE INDEX patterns_supportC ON patterns(supportC, confidenceC);
+CREATE INDEX patterns_confidenceH ON patterns(confidenceH);
+CREATE INDEX patterns_confidenceC ON patterns(confidenceC);
 
-CREATE TABLE matches (
+DROP TABLE IF EXISTS a.patterns;
+CREATE TABLE a.patterns (
+      hash TEXT UNIQUE,
+      matchO INTEGER,
+      matchN INTEGER,
+      UNIQUE (hash)
+);
+CREATE INDEX a.patterns_hash ON patterns(hash);
+
+DROP TABLE IF EXISTS a.matches;
+CREATE TABLE a.matches (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     query TEXT,
     file TEXT,
     begin INTEGER,
     end INTEGER
 );
-CREATE INDEX matches_query on matches(query);
-CREATE INDEX matches_file on matches(file);
+CREATE INDEX a.matches_query ON matches(query);
+CREATE INDEX a.matches_file ON matches(file);

@@ -114,6 +114,12 @@ public interface Dao {
     @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, type, hash) VALUES (:p.oldHash.name, :p.newHash.name, :p.type.id, :p.hash.name)")
     void insertPattern(@BindBean("p") final Pattern pattern);
 
+    @SqlUpdate("INSERT INTO a.patterns (hash) SELECT hash FROM patterns")
+    void prepareAPatterns();
+
+    @SqlUpdate("DELETE FROM a.patterns")
+    void clearAPatterns();
+
     @SqlUpdate("UPDATE patterns AS p SET supportH = (SELECT count(*) FROM chunks AS h WHERE h.pattern_hash = p.hash)")
     void computeSupportH();
 
@@ -126,33 +132,33 @@ public interface Dao {
     @SqlUpdate("UPDATE patterns AS p SET confidenceC = CAST(p.supportC AS REAL) / (SELECT sum(p2.supportC) FROM patterns AS p2 WHERE p2.old = p.old)")
     void computeConfidenceC();
 
-    @SqlUpdate("UPDATE patterns AS p SET matchO = (SELECT count(*) FROM matches AS m WHERE m.query = p.old)")
+    @SqlUpdate("UPDATE a.patterns AS ap SET matchO = (SELECT count(*) FROM matches AS m WHERE m.query = (SELECT p.old FROM patterns AS p WHERE p.hash = ap.hash))")
     void computeMatchO();
 
-    @SqlUpdate("UPDATE patterns AS p SET matchN = (SELECT count(*) FROM matches AS m WHERE m.query = p.new)")
+    @SqlUpdate("UPDATE a.patterns AS ap SET matchN = (SELECT count(*) FROM matches AS m WHERE m.query = (SELECT p.new FROM patterns AS p WHERE p.hash = ap.hash))")
     void computeMatchN();
 
-    @SqlQuery("SELECT * FROM patterns WHERE hash = :h.name")
+    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE hash = :h.name")
     @RegisterRowMapper(PatternRowMapper.class)
     Optional<Pattern> searchPatterns(@BindBean("h") final Hash hash);
 
-    @SqlQuery("SELECT * FROM patterns WHERE hash LIKE ?")
+    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE hash LIKE ?")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> searchPatterns(final String like);
 
-    @SqlQuery("SELECT * FROM patterns")
+    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatterns();
 
-    @SqlQuery("SELECT * FROM patterns WHERE old = :f.hash.name OR new = :f.hash.name")
+    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE old = :f.hash.name OR new = :f.hash.name")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatterns(@BindBean("f") final Fragment fragment);
 
-    @SqlQuery("SELECT * FROM patterns AS p WHERE p.supportH >= ? AND p.confidenceH >= ?")
+    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE supportH >= ? AND confidenceH >= ? ORDER BY supportH DESC, confidenceH DESC")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatternsBySupportH(final int minSupportH, final float minConfidenceH);
 
-    @SqlQuery("SELECT * FROM patterns AS p WHERE p.supportC >= ? AND p.confidenceC >= ?")
+    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE supportC >= ? AND confidenceC >= ? ORDER BY supportC DESC, confidenceC DESC")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatternsBySupportC(final int minSupportC, final float minConfidenceC);
 
@@ -173,11 +179,11 @@ public interface Dao {
     @SqlQuery("INSERT INTO matches (query, file, begin, end) VALUES (:m.query.name, :m.file, :m.lines.begin, :m.lines.end) RETURNING id")
     long insertMatch(@BindBean("m") final Match match);
 
-    @SqlQuery("SELECT * FROM matches WHERE query = :h.name")
+    @SqlQuery("SELECT * FROM a.matches WHERE query = :h.name")
     @RegisterRowMapper(MatchRowMapper.class)
     ResultIterable<Match> listMatches(@BindBean("h") final Hash h);
 
-    @SqlUpdate("DELETE FROM matches")
+    @SqlUpdate("DELETE FROM a.matches")
     void clearMatches();
 
     class MatchRowMapper implements RowMapper<Match> {

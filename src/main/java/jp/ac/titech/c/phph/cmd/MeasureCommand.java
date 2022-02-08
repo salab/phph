@@ -16,6 +16,10 @@ public class MeasureCommand extends BaseCommand {
         dao.computeConfidenceH();
         log.debug("Compute commit-based confidence...");
         dao.computeConfidenceC();
+
+        dao.clearAPatterns();
+        dao.prepareAPatterns();
+
         log.debug("Compute MatchO...");
         dao.computeMatchO();
         log.debug("Compute MatchN...");
