@@ -14,26 +14,22 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class Helper {
-    public String inspectChunk(final String repository, final String commit, final Dao.DBChunk chunk) {
+    public String inspectChunk(final RepositoryCache rc, final String commit, final Dao.DBChunk chunk) {
         final StringBuilder sb = new StringBuilder();
-        try (final RepositoryAccess ra = new RepositoryAccess(Path.of(repository))) {
-            final String oldSource = ra.readFile(commit + "^", chunk.getFile());
-            extract(oldSource, chunk.getOldLines(), "-", sb);
-            sb.append("---------\n");
-            final String newSource = ra.readFile(commit, chunk.getFile());
-            extract(newSource, chunk.getNewLines(), "+", sb);
-        }
+        final String oldSource = rc.get(commit + "^", chunk.getFile());
+        extract(oldSource, chunk.getOldLines(), "-", sb);
+        sb.append("---------\n");
+        final String newSource = rc.get(commit, chunk.getFile());
+        extract(newSource, chunk.getNewLines(), "+", sb);
         return sb.toString();
     }
 
-    public String inspectMatch(final String repository, final String commit, final Match m) {
+    public String inspectMatch(final RepositoryCache rc, final String commit, final Match m) {
         log.info("commit = {}, m = {}", commit, m);
         final StringBuilder sb = new StringBuilder();
         sb.append(String.format("%s:%s\n", m.getFile(), m.getLines()));
-        try (final RepositoryAccess ra = new RepositoryAccess(Path.of(repository))) {
-            final String source = ra.readFile(commit, m.getFile());
-            extract(source, m.getLines(), "*", sb);
-        }
+        final String source = rc.get(commit, m.getFile());
+        extract(source, m.getLines(), "*", sb);
         return sb.toString();
     }
 

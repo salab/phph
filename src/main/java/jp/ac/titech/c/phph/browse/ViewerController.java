@@ -65,7 +65,9 @@ public class ViewerController {
         model.addAttribute("chunkgroups", chunks.stream().collect(Collectors.groupingBy(Dao.DBChunk::getCommitId)));
 
         model.addAttribute("matches", Lists.newArrayList(getDao().listMatches(p.getOldHash())));
-        model.addAttribute("repository", getDao().findRepository().get());
+        final String repo = getDao().findRepository().get();
+        model.addAttribute("repository", repo);
+        model.addAttribute("rc", new RepositoryCache(new RepositoryAccess(Path.of(repo))));
         return "pattern";
     }
 
@@ -74,7 +76,9 @@ public class ViewerController {
         final Fragment f = getDao().findFragment(Hash.parse(hash)).get();
         model.addAttribute("fragment", f);
         model.addAttribute("patterns", Lists.newArrayList(getDao().listPatterns(f)));
-        model.addAttribute("repository", getDao().findRepository().get());
+        final String repo = getDao().findRepository().get();
+        model.addAttribute("repository", repo);
+        model.addAttribute("rc", new RepositoryCache(new RepositoryAccess(Path.of(repo))));
         return "fragment";
     }
 

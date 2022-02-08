@@ -17,7 +17,7 @@
 <p th:if="${matches.isEmpty()}">No matches</p>
 <div th:each="m : ${matches}">
   <p><a th:href="@{/file/HEAD(file=${m.file})} + '#L' + ${m.lines.begin}">[[${m.file}]]</a></p>
-  <pre>[[${@helper.inspectMatch(repository, "HEAD", m)}]]</pre>
+  <pre>[[${@helper.inspectMatch(rc, "HEAD", m)}]]</pre>
 </div>
 
 <h2>Past Changes</h2>
@@ -27,7 +27,7 @@
 <pre th:each="h : ${e.value}">
 --- <a th:href="@{/file/__${c.hash}__^(file=${h.file})} + '#L' + ${h.oldLines.begin}">[[${h.file}]]:[[${h.oldLines}]] @ [[${c.hash}]]^</a>
 +++ <a th:href="@{/file/__${c.hash}__(file=${h.file})} + '#L' + ${h.newLines.begin}">[[${h.file}]]:[[${h.newLines}]] @ [[${c.hash}]]</a>
-[[${@helper.inspectChunk(repository, c.hash, h)}]]
+[[${@helper.inspectChunk(rc, c.hash, h)}]]
 </pre>
 </div>
 
