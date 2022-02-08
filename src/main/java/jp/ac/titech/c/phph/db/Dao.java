@@ -156,13 +156,9 @@ public interface Dao {
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatterns(@BindBean("f") final Fragment fragment);
 
-    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE supportH >= ? AND confidenceH >= ? ORDER BY supportH DESC, confidenceH DESC")
+    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE supportC >= ? AND confidenceC >= ? AND matchO >= ? AND matchN >= ? AND matchO <= ? ORDER BY supportC DESC, confidenceC DESC")
     @RegisterRowMapper(PatternRowMapper.class)
-    ResultIterable<Pattern> listPatternsBySupportH(final int minSupportH, final float minConfidenceH);
-
-    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE supportC >= ? AND confidenceC >= ? ORDER BY supportC DESC, confidenceC DESC")
-    @RegisterRowMapper(PatternRowMapper.class)
-    ResultIterable<Pattern> listPatternsBySupportC(final int minSupportC, final float minConfidenceC);
+    ResultIterable<Pattern> listPatterns(final int minSupportC, final float minConfidenceC, final int minMatchO, final int minMatchN, final int maxMatchO);
 
     @SqlQuery("SELECT count(*) FROM patterns WHERE hash LIKE ?")
     int countPatterns(final String like);

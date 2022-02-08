@@ -39,15 +39,19 @@ public class ViewerController {
         return (Dao) context.getAttribute("dao");
     }
 
-    @GetMapping("/index")
+    @GetMapping("/")
     public String root(final Model model) {
-        model.addAttribute("patterns", getDao().listPatternsBySupportC(2, 0.2f));
-        return "index";
+        return index(model, 0, 0.0f, 0, 0, 9999);
     }
 
-    @GetMapping("/list")
-    public String index(final Model model, final int minSupportC, final float minConfidenceC) {
-        model.addAttribute("patterns", getDao().listPatternsBySupportC(minSupportC, minConfidenceC));
+    @GetMapping("/index")
+    public String index(final Model model, final int minSupport, final float minConfidence, final int minMatchO, final int minMatchN, final int maxMatchO) {
+        model.addAttribute("minSupport", minSupport);
+        model.addAttribute("minConfidence", minConfidence);
+        model.addAttribute("minMatchO", minMatchO);
+        model.addAttribute("minMatchN", minMatchN);
+        model.addAttribute("maxMatchO", maxMatchO);
+        model.addAttribute("patterns", getDao().listPatterns(minSupport, minConfidence, minMatchO, minMatchN, maxMatchO));
         return "index";
     }
 

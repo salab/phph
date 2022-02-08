@@ -5,7 +5,15 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
 <body>
-<table>
+<form action="/list" method="get">
+  <input type="submit" value="search" />
+  min-support: <input name="minSupport" type="number" min="0" size="5" style="width: 5em" th:value="${minSupport}" />
+  min-confidence: <input name="minConfidence" type="number" min="0" size="5" style="width: 5em" th:value="${minConfidence}" />
+  min-matchO: <input name="minMatchO" type="number" min="0" size="5" style="width: 5em" th:value="${minMatchO}" />
+  min-matchN: <input name="minMatchN" type="number" min="0" size="5" style="width: 5em" th:value="${minMatchN}" />
+  max-matchO: <input name="maxMatchO" type="number" min="0" size="5" style="width: 5em" th:value="${maxMatchO}" />
+</form>
+<table style="margin-top: 2em">
   <thead>
     <tr>
       <td>Id</td>
