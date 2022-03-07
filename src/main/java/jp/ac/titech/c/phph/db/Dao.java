@@ -140,7 +140,7 @@ public interface Dao {
     @SqlUpdate("UPDATE a.patterns AS ap SET matchN = (SELECT count(*) FROM matches AS m WHERE m.query = (SELECT p.new FROM patterns AS p WHERE p.hash = ap.hash))")
     void computeMatchN();
 
-    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE hash = :h.name")
+    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE p.hash = :h.name")
     @RegisterRowMapper(PatternRowMapper.class)
     Optional<Pattern> searchPattern(@BindBean("h") final Hash hash);
 
