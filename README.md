@@ -21,3 +21,6 @@ $ java -jar phph-all.jar measure                                 # compute metri
 
 ## Acknowledgments
 This tool is inspired by [MPAnalyzer](https://github.com/YoshikiHigo/MPAnalyzer)/[Ammonia](https://github.com/YoshikiHigo/NH3), and its basic design is based on them.
+
+## Trivia
+phph is an abbreviation of [Phenolphthalein](https://en.wikipedia.org/wiki/Phenolphthalein).
