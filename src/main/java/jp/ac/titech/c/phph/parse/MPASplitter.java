@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MPASplitter implements Splitter {
 
+    private final boolean useNonEssential;
+
     public static final Pattern RE_IDENT = Pattern.compile("^[a-zA-Z_].*|.* [a-zA-Z_].*");
 
     public static final Pattern RE_NON_ESSENTIAL_ASSIGNMENT =
@@ -25,6 +27,10 @@ public class MPASplitter implements Splitter {
 
     static {
         CPAConfig.initialize(new String[] {"-n"}); // normalize
+    }
+
+    public MPASplitter(final boolean useNonEssential) {
+        this.useNonEssential = useNonEssential;
     }
 
     @Override
@@ -38,6 +44,10 @@ public class MPASplitter implements Splitter {
     }
 
     private boolean isEssential(final yoshikihigo.cpanalyzer.data.Statement s) {
+        if (useNonEssential) {
+            return true;
+        }
+
         final boolean result = RE_IDENT.matcher(s.nText).matches() &&
                 !RE_NON_ESSENTIAL_ASSIGNMENT.matcher(s.nText).matches();
         if (!result) {

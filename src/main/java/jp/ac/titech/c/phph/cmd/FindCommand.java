@@ -43,6 +43,9 @@ public class FindCommand extends BaseCommand {
         @Option(names = "--splitter", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         SplitterFactory.Type splitter = SplitterFactory.Type.mpa;
 
+        @Option(names = "--non-essential", description = "Use non-essential statements", negatable = true)
+        boolean useNonEssential = false;
+
         @Option(names = "--prefix", paramLabel = "<path>", description = "path prefix", arity = "0..*")
         String[] prefix;
     }
@@ -104,7 +107,7 @@ public class FindCommand extends BaseCommand {
      */
     protected SetMultimap<Hash, SourceFile> buildFinder() {
         final SetMultimap<Hash, SourceFile> result = HashMultimap.create();
-        final Splitter splitter = SplitterFactory.create(config.splitter);
+        final Splitter splitter = SplitterFactory.create(config.splitter, config.useNonEssential);
 
         for (final Map.Entry<String, String> e : sources.entrySet()) {
             final String path = e.getKey();

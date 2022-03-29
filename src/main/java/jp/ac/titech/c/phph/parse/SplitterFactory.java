@@ -13,10 +13,10 @@ public class SplitterFactory {
         nitron
     }
 
-    public static Splitter create(final Type type) {
+    public static Splitter create(final Type type, final boolean useNonEssential) {
         switch (type) {
             case mpa:
-                return new MPASplitter();
+                return new MPASplitter(useNonEssential);
 
             case nitron:
                 final Path path = Path.of(ClassLoader.getSystemResource("nitronConfig/nitron.json").getPath());

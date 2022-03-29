@@ -45,6 +45,9 @@ public class ExtractCommand extends BaseCommand {
         @Option(names = "--splitter", paramLabel = "<type>", description = "Available: ${COMPLETION-CANDIDATES} (default: ${DEFAULT-VALUE})")
         SplitterFactory.Type splitter = SplitterFactory.Type.mpa;
 
+        @Option(names = "--non-essential", description = "Use non-essential statements", negatable = true)
+        boolean useNonEssential = false;
+
         @Option(names = "--min-size", paramLabel = "<n>", description = "Minimum chunk size (default: ${DEFAULT-VALUE})")
         int minChunkSize = 0;
 
@@ -104,7 +107,7 @@ public class ExtractCommand extends BaseCommand {
 
     private ChunkExtractor createChunkExtractor() {
         final Differencer<Statement> differencer = DifferencerFactory.create(config.differencer);
-        final Splitter splitter = SplitterFactory.create(config.splitter);
+        final Splitter splitter = SplitterFactory.create(config.splitter, config.useNonEssential);
         return new ChunkExtractor(differencer, splitter, config.minChunkSize, config.maxChunkSize);
     }
 }
