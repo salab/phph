@@ -2,12 +2,9 @@ package jp.ac.titech.c.phph.browse;
 
 import com.google.common.collect.Lists;
 import jp.ac.titech.c.phph.db.Dao;
-import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.model.Fragment;
 import jp.ac.titech.c.phph.model.Hash;
-import jp.ac.titech.c.phph.model.Match;
 import jp.ac.titech.c.phph.model.Pattern;
-import jp.ac.titech.c.phph.model.Range;
 import jp.ac.titech.c.phph.util.RepositoryAccess;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.exec.CommandLine;
@@ -26,7 +23,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -41,18 +37,18 @@ public class ViewerController {
 
     @GetMapping("/")
     public String root(final Model model) {
-        return index(model, 0, 0.0f, 0, 0, 9999);
+        return list(model, 0, 0.0f, 0, 0, 9999);
     }
 
-    @GetMapping("/index")
-    public String index(final Model model, final int minSupport, final float minConfidence, final int minMatchO, final int minMatchN, final int maxMatchO) {
+    @GetMapping("/list")
+    public String list(final Model model, final int minSupport, final float minConfidence, final int minMatchO, final int minMatchN, final int maxMatchO) {
         model.addAttribute("minSupport", minSupport);
         model.addAttribute("minConfidence", minConfidence);
         model.addAttribute("minMatchO", minMatchO);
         model.addAttribute("minMatchN", minMatchN);
         model.addAttribute("maxMatchO", maxMatchO);
-        model.addAttribute("patterns", getDao().listPatterns(minSupport, minConfidence, minMatchO, minMatchN, maxMatchO));
-        return "index";
+        model.addAttribute("patterns", Lists.newArrayList(getDao().listPatterns(minSupport, minConfidence, minMatchO, minMatchN, maxMatchO)));
+        return "list";
     }
 
     @GetMapping("/pattern/{hash}")

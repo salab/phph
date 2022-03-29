@@ -13,7 +13,8 @@
   min-matchN: <input name="minMatchN" type="number" min="0" size="5" style="width: 5em" th:value="${minMatchN}" />
   max-matchO: <input name="maxMatchO" type="number" min="0" size="5" style="width: 5em" th:value="${maxMatchO}" />
 </form>
-<table style="margin-top: 2em">
+<p>([[${patterns.size}]] patterns)</p>
+<table>
   <thead>
     <tr>
       <td>Id</td>
@@ -39,11 +40,12 @@
       <td>[[${p.type}]]</td>
       <td>
       <pre style="background-color: aliceblue; display: inline" th:title="${application.dao.findFragment(p.oldHash).get.text}">[[${application.dao.findFragment(p.oldHash).get.shortText}]]</pre>
-      ->
+      -&gt;
       <pre style="background-color: aliceblue; display: inline" th:title="${application.dao.findFragment(p.newHash).get.text}">[[${application.dao.findFragment(p.newHash).get.shortText}]]</pre>
       </td>
     </tr>
   </tbody>
+  <p></p>
 </table>
 </body>
 </html>
