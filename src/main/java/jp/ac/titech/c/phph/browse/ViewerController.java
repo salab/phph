@@ -41,13 +41,13 @@ public class ViewerController {
     }
 
     @GetMapping("/list")
-    public String list(final Model model, final int minSupport, final float minConfidence, final int minMatchO, final int minMatchN, final int maxMatchO) {
-        model.addAttribute("minSupport", minSupport);
-        model.addAttribute("minConfidence", minConfidence);
+    public String list(final Model model, final int minSupportH, final float minConfidenceH, final int minMatchO, final int minMatchN, final int maxMatchO) {
+        model.addAttribute("minSupportH", minSupportH);
+        model.addAttribute("minConfidenceH", minConfidenceH);
         model.addAttribute("minMatchO", minMatchO);
         model.addAttribute("minMatchN", minMatchN);
         model.addAttribute("maxMatchO", maxMatchO);
-        model.addAttribute("patterns", Lists.newArrayList(getDao().listPatterns(minSupport, minConfidence, minMatchO, minMatchN, maxMatchO)));
+        model.addAttribute("patterns", Lists.newArrayList(getDao().listPatterns(minSupportH, minConfidenceH, minMatchO, minMatchN, maxMatchO)));
         return "list";
     }
 
