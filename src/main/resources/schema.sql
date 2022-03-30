@@ -43,6 +43,8 @@ CREATE TABLE patterns (
     supportC INTEGER,
     confidenceH REAL,
     confidenceC REAL,
+    essential TEXT,
+    ignore INTEGER,
     UNIQUE (old, new)
 );
 CREATE INDEX patterns_old ON patterns(old);

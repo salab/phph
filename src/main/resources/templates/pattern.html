@@ -12,6 +12,12 @@
 <p><a th:href="@{'/fragment/' + ${pattern.newHash}}" href="fragment.html">[[${pattern.newHash}]]</a></p>
 <pre style="background-color: aliceblue">[[${application.dao.findFragment(pattern.newHash).get.text}]]</pre>
 
+<h2>Non-Essential Patterns</h2>
+<p th:if="${nonEssentials.isEmpty()}">No entries</p>
+<ul>
+  <li th:each="p : ${nonEssentials}"><a th:href="@{'/pattern/' + ${p.hash}}">[[${p}]]</a></li>
+</ul>
+
 <h2>Matches</h2>
 <p th:if="${not matches.isEmpty()}">[[${matches.size}]] matches</p>
 <p th:if="${matches.isEmpty()}">No matches</p>

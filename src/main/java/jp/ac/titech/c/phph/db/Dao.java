@@ -113,8 +113,11 @@ public interface Dao {
 
     // -------
 
-    @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, type, hash) VALUES (:p.oldHash.name, :p.newHash.name, :p.type.id, :p.hash.name)")
+    @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, type, hash, ignore) VALUES (:p.oldHash.name, :p.newHash.name, :p.type.id, :p.hash.name, 0)")
     void insertPattern(@BindBean("p") final Pattern pattern);
+
+    @SqlUpdate("INSERT OR IGNORE INTO patterns (old, new, type, hash, essential, ignore) VALUES (:p.oldHash.name, :p.newHash.name, :p.type.id, :p.hash.name, :pe.hash.name, 1)")
+    void insertPattern(@BindBean("p") final Pattern pattern, @BindBean("pe") final Pattern essential);
 
     @SqlUpdate("INSERT INTO a.patterns (hash) SELECT hash FROM patterns")
     void prepareAPatterns();
@@ -122,16 +125,16 @@ public interface Dao {
     @SqlUpdate("DELETE FROM a.patterns")
     void clearAPatterns();
 
-    @SqlUpdate("UPDATE patterns AS p SET supportH = (SELECT count(*) FROM chunks AS h WHERE h.pattern_hash = p.hash)")
+    @SqlUpdate("UPDATE patterns AS p SET supportH = (SELECT count(*) FROM chunks AS h WHERE h.pattern_hash = p.hash) WHERE p.ignore <> 1")
     void computeSupportH();
 
-    @SqlUpdate("UPDATE patterns AS p SET supportC = (SELECT count(DISTINCT h.commit_id) FROM chunks AS h WHERE h.pattern_hash = p.hash)")
+    @SqlUpdate("UPDATE patterns AS p SET supportC = (SELECT count(DISTINCT h.commit_id) FROM chunks AS h WHERE h.pattern_hash = p.hash) WHERE p.ignore <> 1")
     void computeSupportC();
 
-    @SqlUpdate("UPDATE patterns AS p SET confidenceH = CAST(p.supportH AS REAL) / (SELECT sum(p2.supportH) FROM patterns AS p2 WHERE p2.old = p.old)")
+    @SqlUpdate("UPDATE patterns AS p SET confidenceH = CAST(p.supportH AS REAL) / (SELECT sum(p2.supportH) FROM patterns AS p2 WHERE p2.old = p.old AND p2.ignore <> 1) WHERE p.ignore <> 1")
     void computeConfidenceH();
 
-    @SqlUpdate("UPDATE patterns AS p SET confidenceC = CAST(p.supportC AS REAL) / (SELECT sum(p2.supportC) FROM patterns AS p2 WHERE p2.old = p.old)")
+    @SqlUpdate("UPDATE patterns AS p SET confidenceC = CAST(p.supportC AS REAL) / (SELECT sum(p2.supportC) FROM patterns AS p2 WHERE p2.old = p.old) WHERE p.ignore <> 1")
     void computeConfidenceC();
 
     @SqlUpdate("UPDATE a.patterns AS ap SET matchO = (SELECT count(*) FROM matches AS m WHERE m.query = (SELECT p.old FROM patterns AS p WHERE p.hash = ap.hash))")
@@ -156,7 +159,11 @@ public interface Dao {
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatterns(@BindBean("f") final Fragment fragment);
 
-    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE supportC >= ? AND confidenceC >= ? AND matchO >= ? AND matchN >= ? AND matchO <= ? ORDER BY supportC DESC, confidenceC DESC")
+    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE essential = :p.hash.name")
+    @RegisterRowMapper(PatternRowMapper.class)
+    ResultIterable<Pattern> listNonEssentialPatterns(@BindBean("p") final Pattern p);
+
+    @SqlQuery("SELECT * FROM patterns AS p LEFT OUTER JOIN a.patterns AS ap ON p.hash = ap.hash WHERE supportC >= ? AND confidenceC >= ? AND matchO >= ? AND matchN >= ? AND matchO <= ? AND ignore <> 1 ORDER BY supportC DESC, confidenceC DESC")
     @RegisterRowMapper(PatternRowMapper.class)
     ResultIterable<Pattern> listPatterns(final int minSupportC, final float minConfidenceC, final int minMatchO, final int minMatchN, final int maxMatchO);
 

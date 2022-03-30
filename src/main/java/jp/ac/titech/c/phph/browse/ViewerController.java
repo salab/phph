@@ -61,6 +61,10 @@ public class ViewerController {
         model.addAttribute("chunkgroups", chunks.stream().collect(Collectors.groupingBy(Dao.DBChunk::getCommitId)));
 
         model.addAttribute("matches", Lists.newArrayList(getDao().listMatches(p.getOldHash())));
+
+        final List<Pattern> nonEssentials = Lists.newArrayList(getDao().listNonEssentialPatterns(p));
+        model.addAttribute("nonEssentials", nonEssentials);
+
         final String repo = getDao().findRepository().get();
         model.addAttribute("repository", repo);
         model.addAttribute("rc", new RepositoryCache(new RepositoryAccess(Path.of(repo))));

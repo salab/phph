@@ -73,16 +73,17 @@ public class ExtractCommand extends BaseCommand {
 
             final TaskQueue<Dao> queue = new TaskQueue<>(config.nthreads);
             for (final RevCommit c : ra.walk(config.from, config.to)) {
-                queue.register(() -> process(c, repoId, ra.inherit()));
+                queue.register(() -> process(c, repoId, ra.inherit(), false));
             }
             queue.consumeAll(dao);
         }
     }
 
-    protected Consumer<Dao> process(final RevCommit c, final long repoId, final RepositoryAccess ra) {
+    protected Consumer<Dao> process(final RevCommit c, final long repoId, final RepositoryAccess ra, boolean registerOnly) {
         final List<Chunk> chunks = extractor.extract(c, ra);
         if (chunks.isEmpty()) {
-            return (dao) -> {};
+            return (dao) -> {
+            };
         }
 
         // pre-computes patterns
@@ -94,6 +95,7 @@ public class ExtractCommand extends BaseCommand {
                         h.getOldFragment(), h.getNewFragment(), h.getFile(), h.getNewLines().getBegin());
             }
         }
+
         return (dao) -> {
             final long commitId = dao.insertCommit(repoId, c.getId().name(), c.getFullMessage());
             for (final Chunk h : chunks) {
