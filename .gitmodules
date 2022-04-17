@@ -1,0 +1,3 @@
+[submodule "src/main/resources/nitronConfig/grammars"]
+	path = src/main/resources/nitronConfig/grammars
+	url = https://github.com/antlr/grammars-v4.git
