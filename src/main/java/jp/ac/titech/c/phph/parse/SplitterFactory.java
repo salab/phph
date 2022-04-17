@@ -19,14 +19,18 @@ public class SplitterFactory {
                 return new MPASplitter();
 
             case nitron:
-                final Path path = Path.of(ClassLoader.getSystemResource("nitronConfig/nitron.json").getPath());
-                final NitronConfig nitronConfig = NitronConfigLoader.INSTANCE.load(path);
-                final LangConfig langConfig = Objects.requireNonNull(nitronConfig.getLangConfig().get("java-jdt"));
-                return new NitronSplitter(langConfig);
+                return createNitronSplitter("java-jdt");
 
             default:
                 assert false;
                 return null;
         }
+    }
+
+    private static Splitter createNitronSplitter(final String configName) {
+        final Path path = Path.of(ClassLoader.getSystemResource("nitronConfig/nitron.json").getPath());
+        final NitronConfig nitronConfig = NitronConfigLoader.INSTANCE.load(path);
+        final LangConfig langConfig = Objects.requireNonNull(nitronConfig.getLangConfig().get(configName));
+        return new NitronSplitter(langConfig);
     }
 }
