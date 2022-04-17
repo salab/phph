@@ -4,7 +4,7 @@ import com.github.durun.nitron.core.config.LangConfig;
 import com.github.durun.nitron.core.config.NitronConfig;
 import com.github.durun.nitron.core.config.loader.NitronConfigLoader;
 
-import java.nio.file.Path;
+import java.net.URL;
 import java.util.Objects;
 
 public class SplitterFactory {
@@ -28,8 +28,8 @@ public class SplitterFactory {
     }
 
     private static Splitter createNitronSplitter(final String configName) {
-        final Path path = Path.of(ClassLoader.getSystemResource("nitronConfig/nitron.json").getPath());
-        final NitronConfig nitronConfig = NitronConfigLoader.INSTANCE.load(path);
+        final URL url = ClassLoader.getSystemResource("nitronConfig/nitron.json");
+        final NitronConfig nitronConfig = NitronConfigLoader.INSTANCE.load(url);
         final LangConfig langConfig = Objects.requireNonNull(nitronConfig.getLangConfig().get(configName));
         return new NitronSplitter(langConfig);
     }
