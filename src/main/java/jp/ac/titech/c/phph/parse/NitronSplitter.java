@@ -23,12 +23,20 @@ public class NitronSplitter implements Splitter {
     private final NitronParser parser;
     private final AstSplitter splitter;
     private final AstProcessor<AstNode> normalizer;
+    private final String extension;
 
     public NitronSplitter(final LangConfig config) {
         parser = config.getParserConfig().getParser();
         final NodeTypePool types = parser.getNodeTypes();
         splitter = config.getProcessConfig().getSplitConfig().initSplitter(types);
         normalizer = config.getProcessConfig().getNormalizeConfig().initNormalizer(types);
+        extension = config.getExtensions().get(0)
+                .substring(1); // ".ext" -> "ext"
+    }
+
+    @Override
+    public String targetExtension() {
+        return extension;
     }
 
     @Override

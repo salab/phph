@@ -1,9 +1,9 @@
 package jp.ac.titech.c.phph.parse;
 
-import jp.ac.titech.c.phph.util.RepositoryAccess;
 import jp.ac.titech.c.phph.diff.Differencer;
 import jp.ac.titech.c.phph.model.Chunk;
 import jp.ac.titech.c.phph.model.Statement;
+import jp.ac.titech.c.phph.util.RepositoryAccess;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -36,7 +36,7 @@ public class ChunkExtractor {
     public List<Chunk> extract(final RevCommit c, final RepositoryAccess ra) {
         final List<DiffEntry> entries = ra.getChanges(c);
         return entries.stream()
-                .filter(e -> isSupportedFileChange(e, "java"))
+                .filter(e -> isSupportedFileChange(e, splitter.targetExtension()))
                 .flatMap(e -> extractChanges(e, ra))
                 .collect(Collectors.toList());
     }
