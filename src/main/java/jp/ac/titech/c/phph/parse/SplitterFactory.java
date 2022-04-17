@@ -10,7 +10,8 @@ import java.util.Objects;
 public class SplitterFactory {
     public enum Type {
         mpa,
-        nitron
+        nitron,
+        golang
     }
 
     public static Splitter create(final Type type) {
@@ -20,6 +21,9 @@ public class SplitterFactory {
 
             case nitron:
                 return createNitronSplitter("java-jdt");
+
+            case golang:
+                return createNitronSplitter("golang");
 
             default:
                 assert false;

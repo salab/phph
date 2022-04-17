@@ -1,5 +1,6 @@
 {
   "langConfigFiles": {
-	"java-jdt": "lang/java-jdt.json"
+	"java-jdt": "lang/java-jdt.json",
+	"golang": "lang/golang.json"
   }
 }

@@ -1,0 +1,50 @@
+{
+  "extensions": [
+	".go"
+  ],
+  "parserConfig": {
+	"type": "antlr",
+	"grammarFiles": [
+	  "../grammars/golang/GoParser.g4",
+	  "../grammars/golang/GoLexer.g4"
+	],
+	"utilJavaFiles": [
+	  "../grammars/golang/Java/GoParserBase.java"
+	],
+	"startRule": "sourceFile"
+  },
+  "processConfig": {
+	"splitConfig": {
+	  "splitRules": [
+		"statement",
+		"exprCaseClause",
+		"functionDecl"
+	  ]
+	},
+	"normalizeConfig": {
+	  "mapping": {
+		"string_": "\"S\"",
+		"RUNE_LIT": "'R'",
+		"DECIMAL_LIT": "N",
+		"BINARY_LIT": "N",
+		"OCTAL_LIT": "N",
+		"HEX_LIT": "N",
+		"FLOAT_LIT": "F",
+		"IMAGINARY_LIT": "I"
+	  },
+	  "indexedMapping": {
+		"//parameterDecl/identifierList/IDENTIFIER": "V",
+		"//declaration/varDecl/varSpec/identifierList/IDENTIFIER": "V",
+		"//shortVarDecl/identifierList/IDENTIFIER": "V",
+		"//rangeClause/identifierList/IDENTIFIER": "V",
+		"//primaryExpr[not(./following-sibling::*/@tag='arguments') and not(../../@tag='key')]/operand/operandName/IDENTIFIER": "V"
+	  },
+	  "ignoreRules": [
+		"packageClause",
+		"importDecl",
+		"//EOS[not(./text()=';')]",
+		"EOF"
+	  ]
+	}
+  }
+}
