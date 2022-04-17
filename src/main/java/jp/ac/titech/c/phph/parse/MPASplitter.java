@@ -24,7 +24,12 @@ public class MPASplitter implements Splitter {
             Pattern.compile("^(\\w+( < \\w+ >)? |this \\. )?\\$V0 = (\"\\$L\"|\\$L|\\$V0|\\$V1|null) ;$");
 
     static {
-        CPAConfig.initialize(new String[] {"-n"}); // normalize
+        CPAConfig.initialize(new String[]{"-n"}); // normalize
+    }
+
+    @Override
+    public String targetExtension() {
+        return "java";
     }
 
     @Override
