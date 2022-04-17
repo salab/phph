@@ -30,7 +30,8 @@ public class NitronSplitter implements Splitter {
         final NodeTypePool types = parser.getNodeTypes();
         splitter = config.getProcessConfig().getSplitConfig().initSplitter(types);
         normalizer = config.getProcessConfig().getNormalizeConfig().initNormalizer(types);
-        extension = config.getExtensions().get(0);
+        extension = config.getExtensions().get(0)
+                .substring(1); // ".ext" -> "ext"
     }
 
     @Override
