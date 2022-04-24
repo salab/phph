@@ -13,7 +13,8 @@ public class SplitterFactory {
         nitron,
         golang,
         typescript,
-        javascript
+        javascript,
+        python3
     }
 
     public static Splitter create(final Type type) {
@@ -32,6 +33,9 @@ public class SplitterFactory {
 
             case javascript:
                 return createNitronSplitter("javascript");
+
+            case python3:
+                return createNitronSplitter("python3");
 
             default:
                 assert false;

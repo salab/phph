@@ -1,0 +1,43 @@
+{
+  "extensions": [".py"],
+  "parserConfig": {
+    "type": "antlr",
+    "grammarFiles": [
+      "../grammars/python/python3/Python3Parser.g4",
+      "../grammars/python/python3/Python3Lexer.g4"
+    ],
+    "utilJavaFiles": [
+      "../grammars/python/python3/Java/Python3LexerBase.java"
+    ],
+    "startRule": "file_input"
+  },
+  "processConfig": {
+    "splitConfig": {
+      "splitRules": [
+        "stmt",
+        "suite"
+      ]
+    },
+    "normalizeConfig": {
+      "mapping": {
+        "STRING": "\"S\"",
+        "NUMBER": "N",
+        "INDENT": "{",
+        "DEDENT": "}"
+      },
+      "indexedMapping": {
+        "//typedargslist/tfpdef/NAME": "V",
+        "//argument/test[not(./following-sibling::*/@tag='ASSIGN') and not(./ancestor::classdef)]//atom_expr[not(./trailer[1]/*[1]/@tag='OPEN_PAREN')]/atom/NAME": "V",
+        "//dictorsetmaker/test[not(./following-sibling::*/@tag='COLON')]//atom_expr[not(./trailer[1]/*[1]/@tag='OPEN_PAREN')]/atom/NAME": "V",
+        "//atom_expr[not(./trailer[1]/*[1]/@tag='OPEN_PAREN') and not(./ancestor::classdef) and not(./ancestor::funcdef) and not(./ancestor::except_clause) and not(./ancestor::annassign) and not(./ancestor::argument) and not(./ancestor::dictorsetmaker)]/atom/NAME": "V",
+        "//except_clause/NAME": "V",
+        "//varargslist/vfpdef/NAME": "V"
+      },
+      "ignoreRules": [
+        "import_stmt",
+        "NEWLINE",
+        "EOF"
+      ]
+    }
+  }
+}
