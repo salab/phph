@@ -1,5 +1,5 @@
 {
-  "extensions": [".ts"],
+  "extensions": [".js"],
   "parserConfig": {
     "type": "antlr",
     "grammarFiles": [
