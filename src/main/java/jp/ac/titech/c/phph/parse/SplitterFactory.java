@@ -11,7 +11,9 @@ public class SplitterFactory {
     public enum Type {
         mpa,
         nitron,
-        golang
+        golang,
+        typescript,
+        javascript
     }
 
     public static Splitter create(final Type type) {
@@ -24,6 +26,12 @@ public class SplitterFactory {
 
             case golang:
                 return createNitronSplitter("golang");
+
+            case typescript:
+                return createNitronSplitter("typescript");
+
+            case javascript:
+                return createNitronSplitter("javascript");
 
             default:
                 assert false;
