@@ -3,3 +3,4 @@
 /.gradle
 *.db
 MyMain.java
+.DS_Store
