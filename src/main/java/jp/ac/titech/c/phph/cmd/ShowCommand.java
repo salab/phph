@@ -132,7 +132,7 @@ public class ShowCommand extends BaseCommand {
     }
 
     protected void extract(final String source, final Range r, final String mark, final StringBuilder sb) {
-        final List<String> lines = source.lines().collect(Collectors.toList());
+        final List<String> lines = source.lines().toList();
         final int size = (int) Math.log10(lines.size());
         final int delta = 2;
 

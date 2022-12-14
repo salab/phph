@@ -1,7 +1,5 @@
 package jp.ac.titech.c.phph.diff;
 
-import org.eclipse.jgit.diff.DiffAlgorithm;
-import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.diff.EditList;
 import org.junit.jupiter.api.Test;
 
@@ -47,7 +45,7 @@ class DifferencerTest {
         return Files.readAllLines(getPath(filename));
     }
 
-    private static Path getPath(final String filename) throws IOException {
+    private static Path getPath(final String filename) {
         return Path.of(DifferencerTest.class.getClassLoader().getResource(filename).getPath());
     }
 }
