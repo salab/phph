@@ -37,6 +37,9 @@ public class Chunk {
     @Getter(lazy = true)
     private final Pattern pattern = Pattern.of(getOldFragment(), getNewFragment());
 
+    @Getter(lazy = true)
+    private final Pattern essentialPattern = Pattern.of(getOldFragment().toEssential(), getNewFragment().toEssential());
+
     public static Chunk of(final String file, final List<Statement> oldStatements, final List<Statement> newStatements, final Edit e) {
         final List<Statement> oldSlice = oldStatements.subList(e.getBeginA(), e.getEndA());
         final List<Statement> newSlice = newStatements.subList(e.getBeginB(), e.getEndB());

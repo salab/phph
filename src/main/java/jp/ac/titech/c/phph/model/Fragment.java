@@ -1,13 +1,16 @@
 package jp.ac.titech.c.phph.model;
 
+import jp.ac.titech.c.phph.parse.MPASplitter;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * A normalized fragment of source code.
@@ -40,6 +43,16 @@ public class Fragment {
         return statements.isEmpty() ? EMPTY : new Fragment(join(statements));
     }
 
+    public Fragment toEssential() {
+        if (text.isEmpty()) {
+            return this;
+        }
+        final String essentialText = Arrays.stream(text.split("\n"))
+                .filter(MPASplitter::isEssential)
+                .collect(Collectors.joining("\n"));
+        return of(essentialText);
+    }
+
     public Query toQuery() {
         return new Query(this);
     }
@@ -53,5 +66,11 @@ public class Fragment {
         return statements.stream()
                 .map(Statement::getNormalized)
                 .collect(Collectors.joining("\n"));
+    }
+
+    public String getShortText() {
+        final String text = getText();
+        final List<String> lines = text.lines().collect(Collectors.toList());
+        return lines.isEmpty() ? "(empty)" : lines.size() > 1 ? lines.get(0) + " ..." : text;
     }
 }

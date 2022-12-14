@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>phph</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<form action="/list" method="get">
+  <input type="submit" value="search" />
+  <label><input name="minSupportH" type="number" min="0" size="5" style="width: 3em" th:value="${minSupportH}" /> &le; supportH</label>
+  /
+  <label><input name="minConfidenceH" type="number" step="0.01" min="0" size="5" style="width: 3em" th:value="${minConfidenceH}" /> &le; min-confidenceH</label>
+  /
+  <label><input name="minMatchO" type="number" min="0" size="5" style="width: 3em" th:value="${minMatchO}" /> &le; matchO &le; <input name="maxMatchO" type="number" min="0" size="5" style="width: 3em" th:value="${maxMatchO}" /></label>
+  /
+  <label><input name="minMatchN" type="number" min="0" size="5" style="width: 3em" th:value="${minMatchN}" /> &le; matchN</label>
+</form>
+<p>([[${patterns.size}]] patterns)</p>
+<table>
+  <thead>
+    <tr>
+      <td>Id</td>
+      <td>supportC</td>
+      <td>supportH</td>
+      <td>confidenceC</td>
+      <td>confidenceH</td>
+      <td>matchO</td>
+      <td>matchN</td>
+      <td>Type</td>
+      <td>Body</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr th:each="p : ${patterns}">
+      <td><a href="pattern.html" th:href="@{'/pattern/' + ${p.hash}}">[[${p.hash.abbreviate(6)}]]</a></td>
+      <td>[[${p.metrics.supportC}]]</td>
+      <td>[[${p.metrics.supportH}]]</td>
+      <td>[[${p.metrics.confidenceC}]]</td>
+      <td>[[${p.metrics.confidenceH}]]</td>
+      <td>[[${p.metrics.matchO}]]</td>
+      <td>[[${p.metrics.matchN}]]</td>
+      <td>[[${p.type}]]</td>
+      <td>
+      <pre style="background-color: aliceblue; display: inline" th:title="${application.dao.findFragment(p.oldHash).get.text}">[[${application.dao.findFragment(p.oldHash).get.shortText}]]</pre>
+      -&gt;
+      <pre style="background-color: aliceblue; display: inline" th:title="${application.dao.findFragment(p.newHash).get.text}">[[${application.dao.findFragment(p.newHash).get.shortText}]]</pre>
+      </td>
+    </tr>
+  </tbody>
+  <p></p>
+</table>
+</body>
+</html>

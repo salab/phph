@@ -1,16 +1,16 @@
 package jp.ac.titech.c.phph.cmd;
 
-import jp.ac.titech.c.phph.util.RepositoryAccess;
-import jp.ac.titech.c.phph.util.TaskQueue;
+import jp.ac.titech.c.phph.db.Dao;
 import jp.ac.titech.c.phph.diff.Differencer;
 import jp.ac.titech.c.phph.diff.DifferencerFactory;
 import jp.ac.titech.c.phph.model.Chunk;
-import jp.ac.titech.c.phph.db.Dao;
 import jp.ac.titech.c.phph.model.Pattern;
 import jp.ac.titech.c.phph.model.Statement;
 import jp.ac.titech.c.phph.parse.ChunkExtractor;
 import jp.ac.titech.c.phph.parse.Splitter;
 import jp.ac.titech.c.phph.parse.SplitterFactory;
+import jp.ac.titech.c.phph.util.RepositoryAccess;
+import jp.ac.titech.c.phph.util.TaskQueue;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jgit.revwalk.RevCommit;
 import picocli.CommandLine.Command;
@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Slf4j
-@Command(name = "extract", description = "Extract commits from a repository")
-public class ExtractCommand extends BaseCommand {
+@Command(name = "registeronly", description = "Register patterns")
+public class RegisterOnlyCommand extends BaseCommand {
 
     public static class Config {
         @Option(names = {"-r", "--repository"}, paramLabel = "<repo>", description = "repository path")
@@ -69,17 +69,15 @@ public class ExtractCommand extends BaseCommand {
     protected void process() {
         try (final RepositoryAccess ra = new RepositoryAccess(config.repository)) {
             log.info("Process {}", config.repository);
-            final long repoId = dao.insertRepository(config.repository.toString());
-
             final TaskQueue<Dao> queue = new TaskQueue<>(config.nthreads);
             for (final RevCommit c : ra.walk(config.from, config.to)) {
-                queue.register(() -> process(c, repoId, ra.inherit(), false));
+                queue.register(() -> process(c, ra.inherit()));
             }
             queue.consumeAll(dao);
         }
     }
 
-    protected Consumer<Dao> process(final RevCommit c, final long repoId, final RepositoryAccess ra, boolean registerOnly) {
+    protected Consumer<Dao> process(final RevCommit c, final RepositoryAccess ra) {
         final List<Chunk> chunks = extractor.extract(c, ra);
         if (chunks.isEmpty()) {
             return (dao) -> {
@@ -97,12 +95,14 @@ public class ExtractCommand extends BaseCommand {
         }
 
         return (dao) -> {
-            final long commitId = dao.insertCommit(repoId, c.getId().name(), c.getFullMessage());
             for (final Chunk h : chunks) {
-                dao.insertFragment(h.getOldFragment());
-                dao.insertFragment(h.getNewFragment());
-                dao.insertPattern(h.getPattern());
-                dao.insertChunk(commitId, h);
+                final Pattern p = h.getPattern();
+                final Pattern pe = h.getEssentialPattern();
+                if (!p.getHash().equals(pe.getHash())) {
+                    dao.insertFragment(h.getOldFragment());
+                    dao.insertFragment(h.getNewFragment());
+                    dao.insertPattern(p, pe);
+                }
             }
         };
     }

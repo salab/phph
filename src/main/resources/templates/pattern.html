@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Pattern [[${pattern.hash}]]</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+<h1>Pattern [[${pattern.hash}]]</h1>
+<p><a th:href="@{'/fragment/' + ${pattern.oldHash}}" href="fragment.html">[[${pattern.oldHash}]]</a></p>
+<pre style="background-color: aliceblue">[[${application.dao.findFragment(pattern.oldHash).get.text}]]</pre>
+->
+<p><a th:href="@{'/fragment/' + ${pattern.newHash}}" href="fragment.html">[[${pattern.newHash}]]</a></p>
+<pre style="background-color: aliceblue">[[${application.dao.findFragment(pattern.newHash).get.text}]]</pre>
+
+<h2>Non-Essential Patterns</h2>
+<p th:if="${nonEssentials.isEmpty()}">No entries</p>
+<ul>
+  <li th:each="p : ${nonEssentials}"><a th:href="@{'/pattern/' + ${p.hash}}">[[${p}]]</a></li>
+</ul>
+
+<h2>Matches</h2>
+<p th:if="${not matches.isEmpty()}">[[${matches.size}]] matches</p>
+<p th:if="${matches.isEmpty()}">No matches</p>
+<div th:each="m : ${matches}">
+  <p><a th:href="@{/file/HEAD(file=${m.file})} + '#L' + ${m.lines.begin}">[[${m.file}]]</a></p>
+  <pre>[[${@helper.inspectMatch(rc, "HEAD", m)}]]</pre>
+</div>
+
+<h2>Past Changes</h2>
+<p>[[${chunks.size}]] chunk(s)</p>
+<div th:each="e : ${chunkgroups}" th:with="c=${application.dao.findCommit(e.key).get}">
+<h3><a th:href="@{'/commit/' + ${c.hash}}">[[${c.hash}]]</a>: [[${c.message}]]</h3>
+<pre th:each="h : ${e.value}">
+--- <a th:href="@{/file/__${c.hash}__^(file=${h.file})} + '#L' + ${h.oldLines.begin}">[[${h.file}]]:[[${h.oldLines}]] @ [[${c.hash}]]^</a>
++++ <a th:href="@{/file/__${c.hash}__(file=${h.file})} + '#L' + ${h.newLines.begin}">[[${h.file}]]:[[${h.newLines}]] @ [[${c.hash}]]</a>
+[[${@helper.inspectChunk(rc, c.hash, h)}]]
+</pre>
+</div>
+
+</body>
+</html>

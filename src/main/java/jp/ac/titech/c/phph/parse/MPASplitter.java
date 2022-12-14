@@ -38,22 +38,23 @@ public class MPASplitter implements Splitter {
         return StringUtility.splitToStatements(source, LANGUAGE.JAVA)
                 .stream()
                 .filter(s -> !(s.tokens.get(0) instanceof IMPORT)) // drop import statements
-                .filter(this::isEssential) // drop non-essential statements
+                .filter(this::filterNonEssential) // drop non-essential statements
                 .map(this::convert)
                 .collect(Collectors.toList());
     }
 
-    private boolean isEssential(final yoshikihigo.cpanalyzer.data.Statement s) {
-        if (useNonEssential) {
+    private boolean filterNonEssential(final yoshikihigo.cpanalyzer.data.Statement s) {
+        if (useNonEssential || isEssential(s.nText)) {
             return true;
-        }
-
-        final boolean result = RE_IDENT.matcher(s.nText).matches() &&
-                !RE_NON_ESSENTIAL_ASSIGNMENT.matcher(s.nText).matches();
-        if (!result) {
+        } else {
             log.trace("Filtering non-essential statement: {}", s.nText);
+            return false;
         }
-        return result;
+    }
+
+    public static boolean isEssential(final String nText) {
+        return RE_IDENT.matcher(nText).matches() &&
+                !RE_NON_ESSENTIAL_ASSIGNMENT.matcher(nText).matches();
     }
 
     private Statement convert(final yoshikihigo.cpanalyzer.data.Statement s) {

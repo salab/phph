@@ -43,6 +43,8 @@ CREATE TABLE patterns (
     supportC INTEGER,
     confidenceH REAL,
     confidenceC REAL,
+    essential TEXT,
+    ignore INTEGER,
     UNIQUE (old, new)
 );
 CREATE INDEX patterns_old ON patterns(old);
@@ -61,6 +63,8 @@ CREATE TABLE a.patterns (
       UNIQUE (hash)
 );
 CREATE INDEX a.patterns_hash ON patterns(hash);
+CREATE INDEX a.patterns_matchO ON patterns(matchO);
+CREATE INDEX a.patterns_matchN ON patterns(matchN);
 
 DROP TABLE IF EXISTS a.matches;
 CREATE TABLE a.matches (
