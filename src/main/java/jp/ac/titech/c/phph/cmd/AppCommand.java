@@ -65,8 +65,9 @@ public class AppCommand implements Callable<Integer> {
     public Integer call() {
         setLoggerLevel(Logger.ROOT_LOGGER_NAME, config.logLevel);
         if (config.logLevel == Level.DEBUG || config.logLevel == Level.TRACE) {
-            // suppress jgit's log
+            // suppress logs of external libraries
             setLoggerLevel("org.eclipse.jgit", Level.INFO);
+            setLoggerLevel("org.snt.inmemantlr", Level.INFO);
         }
 
         log.debug("Set log level to {}", config.logLevel);
