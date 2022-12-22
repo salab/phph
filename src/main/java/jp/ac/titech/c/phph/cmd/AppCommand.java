@@ -53,6 +53,9 @@ public class AppCommand implements Callable<Integer> {
 
         @Option(names = {"-f", "--database"}, paramLabel = "<db>", description = "database file path")
         Path database = Path.of("phph.db");
+
+        @Option(names = {"-m", "--matches-database"}, paramLabel = "<db>", description = "matches database file path")
+        Path matchesDatabase = Path.of("phph-m.db");
     }
 
     @Mixin

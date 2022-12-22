@@ -29,7 +29,7 @@ public abstract class BaseCommand implements Callable<Integer> {
             try (final Handle h = jdbi.open()) {
                 h.useTransaction(h0 -> {
                     this.handle = h0;
-                    h0.execute("ATTACH DATABASE 'phph-a.db' AS a");
+                    h0.execute(String.format("ATTACH DATABASE '%s' AS a", app.config.matchesDatabase));
                     this.dao = h0.attach(Dao.class);
                     try {
                         process();
