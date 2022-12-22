@@ -13,7 +13,7 @@ import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 
 @Slf4j
-@Command(version = "phph", sortOptions = false,
+@Command(version = "phph", sortOptions = false, subcommandsRepeatable = true,
          subcommands = {InitCommand.class, ExtractCommand.class, MeasureCommand.class, FindCommand.class,
                         ShowCommand.class, VerifyCommand.class, RegisterOnlyCommand.class, BrowseCommand.class})
 public class AppCommand implements Callable<Integer> {
