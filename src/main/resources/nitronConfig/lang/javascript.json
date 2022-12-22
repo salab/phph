@@ -1,0 +1,46 @@
+{
+  "extensions": [".js"],
+  "parserConfig": {
+    "type": "antlr",
+    "grammarFiles": [
+      "../grammars/javascript/typescript/TypeScriptLexer.g4",
+      "../grammars/javascript/typescript/TypeScriptParser.g4"
+    ],
+    "utilJavaFiles": [
+      "../grammars/javascript/typescript/Java/TypeScriptLexerBase.java",
+      "../grammars/javascript/typescript/Java/TypeScriptParserBase.java"
+    ],
+    "startRule": "program"
+  },
+  "processConfig": {
+    "splitConfig": {
+      "splitRules": [
+        "statement",
+        "caseClause",
+        "catchProduction",
+        "finallyProduction"
+      ]
+    },
+    "normalizeConfig": {
+      "mapping": {
+        "StringLiteral": "\"S\"",
+        "templateStringLiteral": "\"S\"",
+        "numericLiteral": "N"
+      },
+      "indexedMapping": {
+        "//variableDeclaration/identifierOrKeyWord[not(./following-sibling::*/*[1]/@tag='OpenParen')]/Identifier": "V",
+        "//singleExpression[not(./following-sibling::*/@tag='arguments')]/identifierName[not(./preceding-sibling::*/@tag='Dot')]/Identifier": "V",
+        "//parameterList/parameter/*/identifierOrPattern/identifierName/Identifier": "V",
+        "//arrowFunctionParameters/formalParameterList/formalParameterArg/identifierOrKeyWord/Identifier": "V",
+        "//catchProduction/Identifier": "V"
+      },
+      "ignoreRules": [
+        "importStatement",
+        "//statement[./expressionStatement/expressionSequence/singleExpression/identifierName/reservedWord/keyword/Import/@tag='Import']",
+        "exportStatement",
+        "emptyStatement_",
+        "EOF"
+      ]
+    }
+  }
+}
