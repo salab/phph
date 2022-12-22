@@ -23,6 +23,12 @@ public class PlainSplitter implements Splitter {
     }
 
     @Override
+    public String targetExtension() {
+        // TODO this should accept any language
+        return "java";
+    }
+
+    @Override
     public List<Statement> split(String source) {
         final List<Statement> result = new ArrayList<>();
         int index = 0;
