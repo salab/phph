@@ -9,6 +9,12 @@ repositories {
     maven { url 'https://jitpack.io' }
 }
 
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(16)
+    }
+}
+
 dependencies {
     implementation 'com.github.YoshikiHigo:MPAnalyzer:v0.1.1'
     implementation 'com.github.Durun:nitron:v0.6'
