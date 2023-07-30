@@ -67,6 +67,7 @@ public class AppCommand implements Callable<Integer> {
         if (config.logLevel == Level.DEBUG || config.logLevel == Level.TRACE) {
             // suppress jgit's log
             setLoggerLevel("org.eclipse.jgit", Level.INFO);
+            setLoggerLevel("org.springframework", Level.INFO);
         }
 
         log.debug("Set log level to {}", config.logLevel);
