@@ -17,6 +17,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Mixin;
 import picocli.CommandLine.Option;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Consumer;
@@ -67,6 +68,11 @@ public class ExtractCommand extends BaseCommand {
 
     @Override
     protected void process() {
+        if (!Files.isDirectory(config.repository)) {
+            log.error("Repository not found: {}", config.repository);
+            return;
+        }
+
         try (final RepositoryAccess ra = new RepositoryAccess(config.repository)) {
             log.info("Process {}", config.repository);
             final long repoId = dao.insertRepository(config.repository.toString());
