@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.transformers.*
+
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
@@ -31,9 +33,9 @@ dependencies {
     implementation 'org.jdbi:jdbi3-core:3.39.1'
     implementation 'org.jdbi:jdbi3-sqlobject:3.39.1'
 
-    implementation 'org.springframework.boot:spring-boot-dependencies:2.6.6'
-    implementation 'org.springframework.boot:spring-boot-starter-web:2.6.6'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.6.6'
+    implementation 'org.springframework.boot:spring-boot-dependencies:2.7.14'
+    implementation 'org.springframework.boot:spring-boot-starter-web:2.7.14'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf:2.7.14'
     //implementation 'org.springframework.boot:spring-boot-devtools:2.6.0'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
@@ -61,5 +63,14 @@ jar {
 }
 
 shadowJar {
-    //minimize()
+    // https://github.com/spring-projects/spring-boot/issues/1828
+    // Required for Spring
+    mergeServiceFiles()
+    append 'META-INF/spring.handlers'
+    append 'META-INF/spring.schemas'
+    append 'META-INF/spring.tooling'
+    transform(PropertiesFileTransformer) {
+        paths = ['META-INF/spring.factories' ]
+        mergeStrategy = "append"
+    }
 }
