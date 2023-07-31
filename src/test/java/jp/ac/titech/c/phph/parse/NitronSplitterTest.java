@@ -15,16 +15,15 @@ class NitronSplitterTest {
 
     @Test
     void extractStatements_JDTParser() {
-        final String source = """
-                package com.example;
-                class Sample {
-                  public static void main(String[] args) {
-                    String message = "Hello, world!";
-                    System.out
-                      .println(message);
-                  }
-                }
-                """;
+        final String source =
+                "package com.example;\n" +
+                "class Sample {\n" +
+                "  public static void main(String[] args) {\n" +
+                "    String message = \"Hello, world!\";\n" +
+                "    System.out\n" +
+                "      .println(message);\n" +
+                "  }\n" +
+                "}\n";
 
         final var config = loadLangConfig("java-jdt");
         final var splitter = new NitronSplitter(config);
